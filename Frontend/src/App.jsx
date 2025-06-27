@@ -1,13 +1,15 @@
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <>
+    <BrowserRouter>
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -28,7 +30,28 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-    </>
+      <Routes>
+        <Route path="/login" element={<div>Login Page</div>} />
+        
+        <Route path="/admin" element={
+          <ProtectedRoute roles={['admin']}>
+            <div>Admin Route</div>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/user" element={
+          <ProtectedRoute roles={['user']}>
+            <div>User Route</div>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/visitor" element={
+          <ProtectedRoute roles={['visitor']}>
+            <div>Visitor Route</div>
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
