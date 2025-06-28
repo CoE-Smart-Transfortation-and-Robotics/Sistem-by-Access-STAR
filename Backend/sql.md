@@ -203,12 +203,15 @@ INSERT INTO payments (id, booking_id, midtrans_order_id, amount, payment_method,
 
 ```sql
 -- Cek kursi yang tersedia untuk perjalanan dari origin_station_id = 1 (A) ke destination_station_id = 4 (D)
-SELECT s.id AS seat_id, s.seat_number
+SELECT 
+  s.id AS seat_id, 
+  s.seat_number,
+  t.train_name
 FROM seats s
 JOIN carriages c ON s.carriage_id = c.id
 JOIN trains t ON c.train_id = t.id
 JOIN train_schedules ts ON t.id = ts.train_id
-WHERE ts.id = 1 -- Ganti dengan ID jadwal yang kamu cek
+WHERE ts.id = 1
 AND NOT EXISTS (
     SELECT 1
     FROM bookings b
@@ -216,7 +219,6 @@ AND NOT EXISTS (
       AND b.schedule_id = ts.id
       AND b.status = 'confirmed'
       AND (
-        -- Logika overlap: Kalau stasiun tujuan saya berada setelah origin orang lain dan sebelum tujuan orang lain, berarti overlap
         (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = 1)
             < (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = b.destination_station_id)
         AND
@@ -232,7 +234,10 @@ ORDER BY s.id;
 # Cek kursi yang tersedia dari orang yang sudah turun dari stasiun 3 ke 4
 
 ```sql
-SELECT s.id AS seat_id, s.seat_number
+SELECT 
+  s.id AS seat_id, 
+  s.seat_number,
+  t.train_name
 FROM seats s
 JOIN carriages c ON s.carriage_id = c.id
 JOIN trains t ON c.train_id = t.id
@@ -251,5 +256,6 @@ WHERE NOT EXISTS (
         (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = 4)
             > (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = b.origin_station_id)
       )
-);
+)
+ORDER BY s.id;
 ```
