@@ -1,6 +1,105 @@
 # Struktur database
 
 ```sql
+-- Level 0: Tidak bergantung ke tabel manapun
+CREATE TABLE `train_categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(50) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `stations` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `station_name` varchar(100) DEFAULT NULL,
+  `station_code` varchar(10) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `role` enum('admin', 'visitor', 'user') DEFAULT 'user',
+  `nik` varchar(20) DEFAULT NULL,
+  `address` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Level 1: Bergantung ke Level 0
+CREATE TABLE `trains` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `train_name` varchar(100) DEFAULT NULL,
+  `train_code` varchar(10) DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `trains_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `train_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `carriages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `train_id` int NOT NULL,
+  `carriage_number` int DEFAULT NULL,
+  `class` varchar(20) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `train_id` (`train_id`),
+  CONSTRAINT `carriages_ibfk_1` FOREIGN KEY (`train_id`) REFERENCES `trains` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Level 2: Bergantung ke Level 1
+CREATE TABLE `seats` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `carriage_id` int NOT NULL,
+  `seat_number` varchar(10) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `carriage_id` (`carriage_id`),
+  CONSTRAINT `seats_ibfk_1` FOREIGN KEY (`carriage_id`) REFERENCES `carriages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `train_schedules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `train_id` int NOT NULL,
+  `schedule_date` date DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `train_id` (`train_id`),
+  CONSTRAINT `train_schedules_ibfk_1` FOREIGN KEY (`train_id`) REFERENCES `trains` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Level 3: Bergantung ke Level 2 dan lainnya
+CREATE TABLE `schedule_routes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `schedule_id` int NOT NULL,
+  `station_id` int NOT NULL,
+  `station_order` int DEFAULT NULL,
+  `arrival_time` time DEFAULT NULL,
+  `departure_time` time DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `schedule_id` (`schedule_id`),
+  KEY `station_id` (`station_id`),
+  CONSTRAINT `schedule_routes_ibfk_1` FOREIGN KEY (`schedule_id`) REFERENCES `train_schedules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `schedule_routes_ibfk_2` FOREIGN KEY (`station_id`) REFERENCES `stations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Level 4: Bergantung ke banyak tabel
 CREATE TABLE `bookings` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -26,18 +125,7 @@ CREATE TABLE `bookings` (
   CONSTRAINT `bookings_ibfk_5` FOREIGN KEY (`destination_station_id`) REFERENCES `stations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `carriages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `train_id` int NOT NULL,
-  `carriage_number` int DEFAULT NULL,
-  `class` varchar(20) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `train_id` (`train_id`),
-  CONSTRAINT `carriages_ibfk_1` FOREIGN KEY (`train_id`) REFERENCES `trains` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+-- Level 5: Bergantung ke bookings
 CREATE TABLE `payments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `booking_id` int NOT NULL,
@@ -54,88 +142,6 @@ CREATE TABLE `payments` (
   KEY `booking_id` (`booking_id`),
   CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `schedule_routes` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `schedule_id` int NOT NULL,
-  `station_id` int NOT NULL,
-  `station_order` int DEFAULT NULL,
-  `arrival_time` time DEFAULT NULL,
-  `departure_time` time DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `schedule_id` (`schedule_id`),
-  KEY `station_id` (`station_id`),
-  CONSTRAINT `schedule_routes_ibfk_1` FOREIGN KEY (`schedule_id`) REFERENCES `train_schedules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `schedule_routes_ibfk_2` FOREIGN KEY (`station_id`) REFERENCES `stations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `seats` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `carriage_id` int NOT NULL,
-  `seat_number` varchar(10) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `carriage_id` (`carriage_id`),
-  CONSTRAINT `seats_ibfk_1` FOREIGN KEY (`carriage_id`) REFERENCES `carriages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `stations` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `station_name` varchar(100) DEFAULT NULL,
-  `station_code` varchar(10) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `trains` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `train_name` varchar(100) DEFAULT NULL,
-  `train_code` varchar(10) DEFAULT NULL,
-  `category_id` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  CONSTRAINT `trains_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `train_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `train_categories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `category_name` varchar(50) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `train_schedules` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `train_id` int NOT NULL,
-  `schedule_date` date DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `train_id` (`train_id`),
-  CONSTRAINT `train_schedules_ibfk_1` FOREIGN KEY (`train_id`) REFERENCES `trains` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `role` enum('admin', 'visitor', 'user') DEFAULT 'user',
-  `nik` varchar(20) DEFAULT NULL,
-  `address` text,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 ---
@@ -203,12 +209,15 @@ INSERT INTO payments (id, booking_id, midtrans_order_id, amount, payment_method,
 
 ```sql
 -- Cek kursi yang tersedia untuk perjalanan dari origin_station_id = 1 (A) ke destination_station_id = 4 (D)
-SELECT s.id AS seat_id, s.seat_number
+SELECT 
+  s.id AS seat_id, 
+  s.seat_number,
+  t.train_name
 FROM seats s
 JOIN carriages c ON s.carriage_id = c.id
 JOIN trains t ON c.train_id = t.id
 JOIN train_schedules ts ON t.id = ts.train_id
-WHERE ts.id = 1 -- Ganti dengan ID jadwal yang kamu cek
+WHERE ts.id = 1
 AND NOT EXISTS (
     SELECT 1
     FROM bookings b
@@ -216,7 +225,6 @@ AND NOT EXISTS (
       AND b.schedule_id = ts.id
       AND b.status = 'confirmed'
       AND (
-        -- Logika overlap: Kalau stasiun tujuan saya berada setelah origin orang lain dan sebelum tujuan orang lain, berarti overlap
         (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = 1)
             < (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = b.destination_station_id)
         AND
@@ -232,7 +240,10 @@ ORDER BY s.id;
 # Cek kursi yang tersedia dari orang yang sudah turun dari stasiun 3 ke 4
 
 ```sql
-SELECT s.id AS seat_id, s.seat_number
+SELECT 
+  s.id AS seat_id, 
+  s.seat_number,
+  t.train_name
 FROM seats s
 JOIN carriages c ON s.carriage_id = c.id
 JOIN trains t ON c.train_id = t.id
@@ -251,5 +262,6 @@ WHERE NOT EXISTS (
         (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = 4)
             > (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = b.origin_station_id)
       )
-);
+)
+ORDER BY s.id;
 ```
