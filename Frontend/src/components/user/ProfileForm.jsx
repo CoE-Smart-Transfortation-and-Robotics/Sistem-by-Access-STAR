@@ -12,6 +12,7 @@ const ProfileForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -32,9 +33,11 @@ const ProfileForm = () => {
 
     try {
       await updateProfile(formData);
-      setMessage('Profile updated successfully!');
+      setMessage('Profil berhasil diperbarui!');
+      setMessageType('success');
     } catch (err) {
       setMessage('Error: ' + err.message);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -48,85 +51,167 @@ const ProfileForm = () => {
   };
 
   return (
-    <div className="profile-form">
-      <h2>My Profile</h2>
-      
+    <div className="profile-form-container">
+      <div className="profile-header">
+        <h2>Profil Saya</h2>
+        <p>Kelola informasi profil Anda untuk pengalaman yang lebih personal</p>
+      </div>
+
       {message && (
-        <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+        <div className={`message ${messageType}`}>
+          <span className="message-icon">
+            {messageType === 'success' ? '✓' : '⚠'}
+          </span>
           {message}
         </div>
       )}
-      
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
-          <label>Full Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+
+      <div className="profile-content">
+        {/* User Info Card */}
+        <div className="user-info-card">
+          <div className="user-avatar-section">
+            <div className="user-avatar-large">
+              <span className="avatar-icon">👤</span>
+            </div>
+            <div className="user-basic-info">
+              <h3>{user?.name}</h3>
+              <p className="user-email">{user?.email}</p>
+              <span className="user-role-badge">{user?.role}</span>
+            </div>
+          </div>
+          
+          <div className="user-stats">
+            <div className="user-stat">
+              <span className="stat-value">0</span>
+              <span className="stat-label">Perjalanan</span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-value">0</span>
+              <span className="stat-label">Poin</span>
+            </div>
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+
+        {/* Profile Form */}
+        <div className="profile-form-card">
+          <form onSubmit={handleSubmit} className="profile-form">
+            <div className="form-section">
+              <h3>Informasi Pribadi</h3>
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="name">Nama Lengkap</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Masukkan nama lengkap"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="Masukkan alamat email"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="phone">Nomor Telepon</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    placeholder="Masukkan nomor telepon"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="nik">NIK</label>
+                  <input
+                    type="text"
+                    id="nik"
+                    name="nik"
+                    value={formData.nik}
+                    onChange={handleChange}
+                    required
+                    placeholder="Masukkan NIK"
+                    maxLength="16"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group full-width">
+                <label htmlFor="address">Alamat</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  rows="3"
+                  placeholder="Masukkan alamat lengkap"
+                />
+              </div>
+            </div>
+
+            {/* Role Display (Read-only)
+            <div className="form-section">
+              <h3>Informasi Akun</h3>
+              <div className="form-group">
+                <label>Role Pengguna</label>
+                <div className="readonly-field">
+                  <span className="role-display">{user?.role || ''}</span>
+                  <span className="readonly-note">Role tidak dapat diubah</span>
+                </div>
+              </div>
+            </div>
+             */}
+            <div className="form-actions">
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="btn-primary"
+              >
+                {loading ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">💾</span>
+                    Simpan Perubahan
+                  </>
+                )}
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-secondary"
+                onClick={() => window.location.reload()}
+              >
+                <span className="btn-icon">🔄</span>
+                Reset
+              </button>
+            </div>
+          </form>
         </div>
-        
-        <div className="form-group">
-          <label>Phone Number</label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label>NIK</label>
-          <input
-            type="text"
-            name="nik"
-            value={formData.nik}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label>Address</label>
-          <textarea
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            required
-            rows="3"
-          />
-        </div>
-        
-        <div className="form-group">
-          <label>Role</label>
-          <input 
-            type="text" 
-            value={user?.role || ''} 
-            disabled 
-            className="readonly-field"
-          />
-        </div>
-        
-        <button type="submit" disabled={loading} className="btn-primary">
-          {loading ? 'Updating...' : 'Update Profile'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
