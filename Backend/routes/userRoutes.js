@@ -39,7 +39,7 @@ router.use(authenticate);
 
 /**
  * @swagger
- * /users/profile/me:
+ * /api/users/profile/me:
  *   get:
  *     summary: Get own profile
  *     tags: [Users]
@@ -57,7 +57,7 @@ router.get('/profile/me', userController.getProfile);
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
  *     summary: Get all users (admin only)
  *     tags: [Users]
@@ -77,7 +77,7 @@ router.get('/', authorizeRole('admin'), userController.getAllUsers);
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   get:
  *     summary: Get user by ID (admin only)
  *     tags: [Users]
@@ -101,7 +101,7 @@ router.get('/:id', authorizeRole('admin'), userController.getUserById);
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   put:
  *     summary: Update user (admin or user themself)
  *     tags: [Users]
@@ -143,7 +143,7 @@ router.put('/:id', userController.updateUser);
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   delete:
  *     summary: Delete user (admin only)
  *     tags: [Users]

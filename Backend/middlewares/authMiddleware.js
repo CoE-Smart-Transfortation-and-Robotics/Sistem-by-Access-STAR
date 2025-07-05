@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
+const { User } = require('../models');
 const SECRET_KEY = process.env.JWT_SECRET || 'secret123';
 
 /**
- * Middleware untuk memverifikasi token JWT dan menyimpan user ke req.user
+ * Middleware untuk memverifikasi token JWT dan menyimpan user lengkap ke req.user
  */
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,7 +19,16 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    req.user = decoded;
+    
+    const user = await User.findByPk(decoded.id, {
+      attributes: ['id', 'name', 'email', 'phone', 'nik', 'address', 'role']
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    req.user = user;
     next();
   } catch (err) {
     console.error('JWT error:', err.message);
