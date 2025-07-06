@@ -1,12 +1,4 @@
-const {
-  Train,
-  TrainSchedule,
-  Carriage,
-  Seat,
-  ScheduleRoute,
-  sequelize
-} = require('../models');
-const { Op } = require('sequelize');
+const { Train, TrainSchedule, Carriage, Seat, ScheduleRoute, sequelize } = require('../models');
 
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
@@ -31,14 +23,14 @@ async function generateScheduleForTomorrow() {
         created_at: timestampNow,
         updated_at: timestampNow
       }, { transaction: t });
-      
+
       const latestSchedule = await TrainSchedule.findOne({
         where: { train_id: train.id },
         order: [['schedule_date', 'DESC']],
         include: [ScheduleRoute]
       });
 
-      if (latestSchedule && latestSchedule.ScheduleRoutes.length > 0) {
+      if (latestSchedule?.ScheduleRoutes?.length) {
         for (const route of latestSchedule.ScheduleRoutes) {
           await ScheduleRoute.create({
             schedule_id: schedule.id,
@@ -51,7 +43,7 @@ async function generateScheduleForTomorrow() {
           }, { transaction: t });
         }
       }
-      
+
       const carriages = await Carriage.findAll({
         where: { train_id: train.id },
         include: [Seat]

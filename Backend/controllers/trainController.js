@@ -2,7 +2,6 @@ const { Train, TrainCategory, TrainSchedule, ScheduleRoute, Station } = require(
 const { Op } = require('sequelize');
 
 module.exports = {
-  // 1. Ambil semua kereta (include kategori)
   async getAllTrains(req, res) {
     try {
       const trains = await Train.findAll({
@@ -14,7 +13,6 @@ module.exports = {
     }
   },
 
-  // 2. Ambil detail kereta by ID
   async getTrainById(req, res) {
     try {
       const train = await Train.findByPk(req.params.id, {
@@ -27,7 +25,6 @@ module.exports = {
     }
   },
 
-  // 3. Buat kereta baru
   async createTrain(req, res) {
     try {
       const { train_name, train_code, category_id } = req.body;
@@ -38,7 +35,6 @@ module.exports = {
     }
   },
 
-  // 4. Update kereta
   async updateTrain(req, res) {
     try {
       const { train_name, train_code, category_id } = req.body;
@@ -52,7 +48,6 @@ module.exports = {
     }
   },
 
-  // 5. Hapus kereta
   async deleteTrain(req, res) {
     try {
       const train = await Train.findByPk(req.params.id);
@@ -65,7 +60,6 @@ module.exports = {
     }
   },
 
-  // 6. Improvisasi: Get semua gerbong dari kereta
   async getCarriagesByTrainId(req, res) {
     try {
       const carriages = await Carriage.findAll({ where: { train_id: req.params.id } });
@@ -75,7 +69,6 @@ module.exports = {
     }
   },
 
-  // 7. Improvisasi: Get semua jadwal dari kereta
   async getSchedulesByTrainId(req, res) {
     try {
       const schedules = await TrainSchedule.findAll({ where: { train_id: req.params.id } });
@@ -85,7 +78,6 @@ module.exports = {
     }
   },
 
-  // 8. Improvisasi: Search kereta berdasarkan rute dan tanggal
   async searchTrains(req, res) {
     const { from, to, date } = req.query;
 
@@ -94,7 +86,6 @@ module.exports = {
     }
 
     try {
-      // Ambil semua ScheduleRoute yg mengandung from dan to
       const routes = await ScheduleRoute.findAll({
         where: {
           station_id: { [Op.in]: [from, to] }
@@ -111,7 +102,7 @@ module.exports = {
       }
 
       const validScheduleIds = [];
-      const stationNameMap = {}; // key: schedule_id, val: { from: '...', to: '...' }
+      const stationNameMap = {};
 
       for (const [schedule_id, items] of Object.entries(grouped)) {
         if (items.length !== 2) continue;

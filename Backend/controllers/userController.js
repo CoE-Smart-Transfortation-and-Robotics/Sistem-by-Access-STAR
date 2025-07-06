@@ -1,7 +1,6 @@
 const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 
-// GET ALL USERS (admin only)
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -13,7 +12,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// GET USER BY ID (admin only)
 const getUserById = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -26,7 +24,6 @@ const getUserById = async (req, res) => {
   }
 };
 
-// UPDATE USER (admin atau user itu sendiri)
 const updateUser = async (req, res) => {
   try {
     const {
@@ -57,7 +54,7 @@ const updateUser = async (req, res) => {
       phone: phone ?? user.phone,
       nik: nik ?? user.nik,
       address: address ?? user.address,
-      role: req.user.role === 'admin' ? (role ?? user.role) : user.role // hanya admin boleh ubah role
+      role: req.user.role === 'admin' ? (role ?? user.role) : user.role
     });
 
     res.json({
@@ -77,7 +74,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-// DELETE USER (admin only)
 const deleteUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
@@ -90,7 +86,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// GET PROFILE (diri sendiri, dari JWT)
 const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
