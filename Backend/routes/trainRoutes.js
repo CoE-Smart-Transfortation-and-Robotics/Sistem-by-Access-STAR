@@ -125,4 +125,73 @@ router.put('/:id', authenticate, authorizeRole('admin'), trainController.updateT
  */
 router.delete('/:id', authenticate, authorizeRole('admin'), trainController.deleteTrain);
 
+/**
+ * @swagger
+ * /api/trains/{id}/carriages:
+ *   get:
+ *     summary: Ambil semua gerbong untuk kereta tertentu
+ *     tags: [Trains]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID dari kereta
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Daftar gerbong kereta
+ */
+router.get('/:id/carriages', trainController.getCarriagesByTrainId);
+
+/**
+ * @swagger
+ * /api/trains/{id}/schedules:
+ *   get:
+ *     summary: Ambil semua jadwal dari kereta tertentu
+ *     tags: [Trains]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID dari kereta
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Daftar jadwal kereta
+ */
+router.get('/:id/schedules', trainController.getSchedulesByTrainId);
+
+/**
+ * @swagger
+ * /api/trains/search/route:
+ *   get:
+ *     summary: Cari kereta berdasarkan rute dan tanggal
+ *     tags: [Trains]
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         description: ID stasiun asal
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: to
+ *         description: ID stasiun tujuan
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: date
+ *         description: Tanggal perjalanan (YYYY-MM-DD)
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Daftar jadwal kereta sesuai rute
+ */
+router.get('/search/route', trainController.searchTrains);
+
 module.exports = router;
