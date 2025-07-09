@@ -5,7 +5,12 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const authenticate = require('./middlewares/authMiddleware');
 const authorizeRole = require('./middlewares/roleMiddleware');
+const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const stationRoutes = require('./routes/stationRoutes');
+const trainRoutes = require('./routes/trainRoutes');
+const trainScheduleRoutes = require('./routes/trainScheduleRoutes');
+const scheduleRouteRoutes = require('./routes/scheduleRouteRoutes');
 
 const app = express();
 
@@ -20,7 +25,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/stations', stationRoutes);
+app.use('/api/trains', trainRoutes);
+app.use('/api/train-schedules', trainScheduleRoutes);
+app.use('/api/schedule-routes', scheduleRouteRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running');
