@@ -1,3 +1,4 @@
+"use strict";
 const { Train, TrainSchedule, Carriage, Seat, ScheduleRoute, sequelize } = require('../models');
 
 const dayjs = require('dayjs');

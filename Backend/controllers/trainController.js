@@ -1,3 +1,4 @@
+"use strict";
 const { Train, TrainCategory, TrainSchedule, ScheduleRoute, Station } = require('../models');
 const { Op } = require('sequelize');
 
