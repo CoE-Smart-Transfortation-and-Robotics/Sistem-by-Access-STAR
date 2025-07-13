@@ -4,7 +4,7 @@ import ProtectedRoute from '../../components/common/ProtectedRoute';
 
 const UserManagementPage = () => {
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute>
       <Layout>
         <UserManagement />
       </Layout>
