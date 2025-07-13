@@ -14,16 +14,25 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       apiService.getProfile()
-        .then(response => setUser(response.user))
-        .catch(() => localStorage.removeItem('token'))
+        .then(response => {
+          setUser(response.user);
+          setIsAuthenticated(true); 
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          setUser(null);
+          setIsAuthenticated(false); 
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
+      setIsAuthenticated(false); 
     }
   }, []);
 
@@ -31,6 +40,7 @@ export const AuthProvider = ({ children }) => {
     const response = await apiService.login(credentials);
     localStorage.setItem('token', response.token);
     setUser(response.user);
+    setIsAuthenticated(true); 
     return response;
   };
 
@@ -42,22 +52,21 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    setIsAuthenticated(false); 
   };
 
   const updateProfile = async (data) => {
     const response = await apiService.updateUser(user.id, data);
     setUser(response.user);
     return response;
-  };
-
-  const value = {
+  };  const value = {
     user,
     login,
     register,
     logout,
     updateProfile,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated, 
   };
 
   return (

@@ -31,7 +31,7 @@ class ApiService {
     return response.json();
   }
 
-  // Auth endpoints (perlu ditambahkan di backend)
+
   async login(credentials) {
     return this.request('/auth/login', {
       method: 'POST',
@@ -46,9 +46,9 @@ class ApiService {
     });
   }
 
-  // User endpoints (sesuai backend routes yang ada)
+
   async getProfile() {
-    return this.request('/users/profile/me');
+    return this.request('/auth/profile'); 
   }
 
   async getAllUsers() {
