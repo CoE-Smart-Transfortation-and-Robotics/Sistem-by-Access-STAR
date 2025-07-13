@@ -19,7 +19,7 @@ const AdminDashboard = () => {
       icon: '🚂',
       title: 'Train Management',
       description: 'Add, edit, and manage trains',
-      action: () => console.log('Train Management - Coming Soon'),
+      action: () => navigate('/admin/train-management'),
       color: '#EF4444'
     },
     {
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
   const handleActionClick = (action) => {
     switch (action) {
       case 'train-fleet':
-        console.log('Train Fleet Management - Coming Soon');
+        navigate('/admin/train-management')
         break;
       case 'station-network':
         console.log('Station Network Management - Coming Soon');
