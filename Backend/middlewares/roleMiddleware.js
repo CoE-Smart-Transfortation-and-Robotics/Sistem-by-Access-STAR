@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Middleware untuk memeriksa role user yang sudah ter-autentikasi
  * @param  {...string} roles - Daftar role yang diizinkan (contoh: 'admin', 'visitor', 'user')
