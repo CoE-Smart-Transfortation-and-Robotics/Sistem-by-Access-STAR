@@ -1,3 +1,4 @@
+"use strict";
 const { TrainSchedule, Train } = require('../models');
 
 module.exports = {

@@ -1,10 +1,13 @@
+"use strict";
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+
 const authenticate = require('./middlewares/authMiddleware');
 const authorizeRole = require('./middlewares/roleMiddleware');
+
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const stationRoutes = require('./routes/stationRoutes');
@@ -14,6 +17,7 @@ const carriageRoutes = require('./routes/carriageRoutes');
 const seatRoutes = require('./routes/seatRoutes');
 const trainScheduleRoutes = require('./routes/trainScheduleRoutes');
 const scheduleRouteRoutes = require('./routes/scheduleRouteRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
 
@@ -37,6 +41,7 @@ app.use('/api/carriages', carriageRoutes);
 app.use('/api/seats', seatRoutes);
 app.use('/api/train-schedules', trainScheduleRoutes);
 app.use('/api/schedule-routes', scheduleRouteRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running');
@@ -68,8 +73,8 @@ const swaggerOptions = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-        }
-      }
+        },
+      },
     },
     security: [
       {
@@ -83,6 +88,8 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+console.log(`✅ Swagger docs available at http://localhost:${process.env.PORT || 9000}/api-docs`);
+
 app.listen(process.env.PORT || 9000, () => {
-  console.log(`Server running on port ${process.env.PORT || 9000}`);
+  console.log(`🚀 Server running on port ${process.env.PORT || 9000}`);
 });
