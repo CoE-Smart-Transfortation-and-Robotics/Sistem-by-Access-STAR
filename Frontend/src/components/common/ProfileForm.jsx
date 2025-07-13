@@ -105,6 +105,7 @@ const ProfileForm = () => {
                     type="text"
                     id="name"
                     name="name"
+                    style={{color: 'black' }}
                     value={formData.name}
                     onChange={handleChange}
                     required
@@ -118,6 +119,7 @@ const ProfileForm = () => {
                     type="email"
                     id="email"
                     name="email"
+                    style={{color: 'black' }}
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -133,6 +135,7 @@ const ProfileForm = () => {
                     type="tel"
                     id="phone"
                     name="phone"
+                    style={{color: 'black' }}
                     value={formData.phone}
                     onChange={handleChange}
                     required
@@ -146,6 +149,7 @@ const ProfileForm = () => {
                     type="text"
                     id="nik"
                     name="nik"
+                    style={{color: 'black' }}
                     value={formData.nik}
                     onChange={handleChange}
                     required
@@ -160,6 +164,7 @@ const ProfileForm = () => {
                 <textarea
                   id="address"
                   name="address"
+                  style={{color: 'black' }}
                   value={formData.address}
                   onChange={handleChange}
                   required
@@ -169,24 +174,11 @@ const ProfileForm = () => {
               </div>
             </div>
 
-            {/* Role Display (Read-only)
-            <div className="form-section">
-              <h3>Informasi Akun</h3>
-              <div className="form-group">
-                <label>Role Pengguna</label>
-                <div className="readonly-field">
-                  <span className="role-display">{user?.role || ''}</span>
-                  <span className="readonly-note">Role tidak dapat diubah</span>
-                </div>
-              </div>
-            </div>
-             */}
             <div className="form-actions">
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="btn-primary"
-              >
+                className="btn-primary">
                 {loading ? (
                   <>
                     <span className="loading-spinner"></span>
@@ -198,15 +190,6 @@ const ProfileForm = () => {
                     Simpan Perubahan
                   </>
                 )}
-              </button>
-              
-              <button 
-                type="button" 
-                className="btn-secondary"
-                onClick={() => window.location.reload()}
-              >
-                <span className="btn-icon">🔄</span>
-                Reset
               </button>
             </div>
           </form>

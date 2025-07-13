@@ -9,6 +9,9 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const stationRoutes = require('./routes/stationRoutes');
 const trainRoutes = require('./routes/trainRoutes');
+const trainCategoryRoutes = require('./routes/trainCategoryRoutes');
+const carriageRoutes = require('./routes/carriageRoutes');
+const seatRoutes = require('./routes/seatRoutes');
 const trainScheduleRoutes = require('./routes/trainScheduleRoutes');
 const scheduleRouteRoutes = require('./routes/scheduleRouteRoutes');
 
@@ -29,6 +32,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stations', stationRoutes);
 app.use('/api/trains', trainRoutes);
+app.use('/api/train-categories', trainCategoryRoutes);
+app.use('/api/carriages', carriageRoutes);
+app.use('/api/seats', seatRoutes);
 app.use('/api/train-schedules', trainScheduleRoutes);
 app.use('/api/schedule-routes', scheduleRouteRoutes);
 
