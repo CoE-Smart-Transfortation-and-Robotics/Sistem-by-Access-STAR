@@ -187,6 +187,74 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Train Category endpoints
+  async getAllTrainCategories() {
+    return this.request('/train-categories');
+  }
+
+  async createTrainCategory(data) {
+    return this.request('/train-categories', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  // Carriage endpoints
+  async getAllCarriages() {
+    return this.request('/carriages');
+  }
+
+  async getCarriageById(id) {
+    return this.request(`/carriages/${id}`);
+  }
+
+  async createCarriage(data) {
+    return this.request('/carriages', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateCarriage(id, data) {
+    return this.request(`/carriages/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteCarriage(id) {
+    return this.request(`/carriages/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getCarriagesByTrainId(trainId) {
+    return this.request(`/carriages/train/${trainId}`);
+  }
+
+  // Seat endpoints
+  async getAllSeats() {
+    return this.request('/seats');
+  }
+
+  async createSeat(data) {
+    return this.request('/seats', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async createMultipleSeats(data) {
+    return this.request('/seats/bulk', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getSeatsByCarriageId(carriageId) {
+    return this.request(`/seats/carriage/${carriageId}`);
+  }
 }
 
 export const apiService = new ApiService();
