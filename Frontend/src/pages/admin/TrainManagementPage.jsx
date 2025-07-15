@@ -1,16 +1,15 @@
 import Layout from '../../components/common/Layout';
-import AdminDashboard from '../../components/admin/AdminDashboard';
+import TrainManagement from '../../components/admin/TrainManagement';
 import ProtectedRoute from '../../components/common/ProtectedRoute';
-import '../../styles/admin/AdminDashboard.css';
 
-const AdminDashboardPage = () => {
+const TrainManagementPage = () => {
   return (
     <ProtectedRoute>
       <Layout>
-          <AdminDashboard />
+        <TrainManagement />
       </Layout>
     </ProtectedRoute>
   );
 };
 
-export default AdminDashboardPage;
+export default TrainManagementPage;

@@ -1,6 +1,6 @@
 import RegisterForm from '../../components/auth/RegisterForm';
 import BackgroundAnimation from '../../components/auth/BackgroundAnimation';
-import '../../styles/auth.css';
+import '../../styles/auth/auth.css';
 
 const RegisterPage = () => {
   return (

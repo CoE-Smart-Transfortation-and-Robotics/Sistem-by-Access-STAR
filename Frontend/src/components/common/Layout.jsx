@@ -1,6 +1,6 @@
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import './Layout.css';
+import '../../styles/common/Layout.css';
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -46,7 +46,6 @@ const Layout = ({ children }) => {
               <div className="nav-buttons">
                 {user.role === 'admin' && (
                   <div className="nav-group">
-                    <span className="nav-group-label">Admin</span>
                     <button 
                       className="nav-btn admin-btn"
                       onClick={() => handleNavigation('/admin/dashboard')}
@@ -59,7 +58,7 @@ const Layout = ({ children }) => {
                       onClick={() => handleNavigation('/admin/users')}
                     >
                       <span className="btn-icon">👥</span>
-                      User Management
+                      User Mgt
                     </button>
                   </div>
                 )}
