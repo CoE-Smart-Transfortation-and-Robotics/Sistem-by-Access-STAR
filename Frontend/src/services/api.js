@@ -255,6 +255,61 @@ class ApiService {
   async getSeatsByCarriageId(carriageId) {
     return this.request(`/seats/carriage/${carriageId}`);
   }
+
+ // =================Train Schedule endpoints======================
+  async getAllTrainSchedules() {
+    return this.request('/train-schedules');
+  }
+
+  async addTrainSchedule(data) {
+    return this.request('/train-schedules', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateTrainSchedule(id, data) {
+    return this.request(`/train-schedules/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteTrainSchedule(id) {
+    return this.request(`/train-schedules/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Schedule Routes endpoints
+  async getScheduleRoutes(scheduleId) {
+    return this.request(`/schedule-routes?schedule_id=${scheduleId}`);
+  }
+
+  async addScheduleRoute(data) {
+    return this.request('/schedule-routes', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async deleteScheduleRoute(id) {
+    return this.request(`/schedule-routes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Station endpoints
+  async getAllStations() {
+    return this.request('/stations');
+  }
+
+  // Train endpoints
+  async getAllTrains() {
+    return this.request('/trains');
+  }
+
+  //=====================end======================
 }
 
 export const apiService = new ApiService();
