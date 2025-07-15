@@ -28,7 +28,14 @@ const AdminDashboard = () => {
       description: 'Manage stations and locations',
       action: () => console.log('Station Management - Coming Soon'),
       color: '#06B6D4'
-    }
+    },
+    {
+    icon: '📅', 
+    title: 'Train Schedules', 
+    description: 'Manage train schedules and timetables', 
+    action: () => navigate('/admin/schedules'), 
+    color: '#EF4444'
+  },
   ];
 
   const allServices = [

@@ -15,6 +15,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     console.log('🚪 Logging out...');
     localStorage.removeItem('token');
     setUser(null);
-    console.log('✅ Logout complete');
+    setIsAuthenticated(false); 
   };
 
   const updateProfile = async (data) => {
@@ -115,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated, 
   };
 
   // Show loading state
