@@ -23,6 +23,25 @@ const authorizeRole = require('../middlewares/roleMiddleware');
  *     responses:
  *       200:
  *         description: List rute jadwal
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   schedule_id:
+ *                     type: integer
+ *                   station_id:
+ *                     type: integer
+ *                   station_order:
+ *                     type: integer
+ *                   arrival_time:
+ *                     type: string
+ *                   departure_time:
+ *                     type: string
  */
 router.get('/', authenticate, controller.getAllScheduleRoutes);
 
@@ -43,6 +62,23 @@ router.get('/', authenticate, controller.getAllScheduleRoutes);
  *     responses:
  *       200:
  *         description: Detail rute jadwal
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 schedule_id:
+ *                   type: integer
+ *                 station_id:
+ *                   type: integer
+ *                 station_order:
+ *                   type: integer
+ *                 arrival_time:
+ *                   type: string
+ *                 departure_time:
+ *                   type: string
  */
 router.get('/:id', authenticate, controller.getScheduleRouteById);
 
@@ -55,6 +91,7 @@ router.get('/:id', authenticate, controller.getScheduleRouteById);
  *     security:
  *       - bearerAuth: []
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -78,6 +115,23 @@ router.get('/:id', authenticate, controller.getScheduleRouteById);
  *     responses:
  *       201:
  *         description: Rute berhasil ditambahkan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 schedule_id:
+ *                   type: integer
+ *                 station_id:
+ *                   type: integer
+ *                 station_order:
+ *                   type: integer
+ *                 arrival_time:
+ *                   type: string
+ *                 departure_time:
+ *                   type: string
  */
 router.post('/', authenticate, authorizeRole('admin'), controller.createScheduleRoute);
 
@@ -96,6 +150,7 @@ router.post('/', authenticate, authorizeRole('admin'), controller.createSchedule
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -116,6 +171,23 @@ router.post('/', authenticate, authorizeRole('admin'), controller.createSchedule
  *     responses:
  *       200:
  *         description: Rute berhasil diperbarui
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 schedule_id:
+ *                   type: integer
+ *                 station_id:
+ *                   type: integer
+ *                 station_order:
+ *                   type: integer
+ *                 arrival_time:
+ *                   type: string
+ *                 departure_time:
+ *                   type: string
  */
 router.put('/:id', authenticate, authorizeRole('admin'), controller.updateScheduleRoute);
 
@@ -136,6 +208,14 @@ router.put('/:id', authenticate, authorizeRole('admin'), controller.updateSchedu
  *     responses:
  *       200:
  *         description: Rute berhasil dihapus
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Schedule route deleted successfully
  */
 router.delete('/:id', authenticate, authorizeRole('admin'), controller.deleteScheduleRoute);
 
