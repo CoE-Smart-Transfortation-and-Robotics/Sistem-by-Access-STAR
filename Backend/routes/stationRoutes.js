@@ -23,6 +23,19 @@ const authorizeRole = require('../middlewares/roleMiddleware');
  *     responses:
  *       200:
  *         description: Daftar stasiun berhasil diambil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   station_name:
+ *                     type: string
+ *                   station_code:
+ *                     type: string
  */
 router.get('/', authenticate, stationsController.getAllStations);
 
@@ -44,6 +57,17 @@ router.get('/', authenticate, stationsController.getAllStations);
  *     responses:
  *       200:
  *         description: Data stasiun berhasil ditemukan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 station_name:
+ *                   type: string
+ *                 station_code:
+ *                   type: string
  *       404:
  *         description: Stasiun tidak ditemukan
  */
@@ -63,6 +87,9 @@ router.get('/:id', authenticate, stationsController.getStationById);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - station_name
+ *               - station_code
  *             properties:
  *               station_name:
  *                 type: string
@@ -71,6 +98,17 @@ router.get('/:id', authenticate, stationsController.getStationById);
  *     responses:
  *       201:
  *         description: Stasiun berhasil ditambahkan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 station_name:
+ *                   type: string
+ *                 station_code:
+ *                   type: string
  *       403:
  *         description: Forbidden (hanya admin)
  */
@@ -104,6 +142,17 @@ router.post('/', authenticate, authorizeRole('admin'), stationsController.create
  *     responses:
  *       200:
  *         description: Data stasiun berhasil diperbarui
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 station_name:
+ *                   type: string
+ *                 station_code:
+ *                   type: string
  *       403:
  *         description: Forbidden (hanya admin)
  */
@@ -126,6 +175,14 @@ router.put('/:id', authenticate, authorizeRole('admin'), stationsController.upda
  *     responses:
  *       200:
  *         description: Stasiun berhasil dihapus
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Station deleted successfully
  *       403:
  *         description: Forbidden (hanya admin)
  */
