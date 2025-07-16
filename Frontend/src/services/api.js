@@ -255,6 +255,7 @@ class ApiService {
   async getSeatsByCarriageId(carriageId) {
     return this.request(`/seats/carriage/${carriageId}`);
   }
+<<<<<<< Updated upstream
 
  // =================Train Schedule endpoints======================
   async getAllTrainSchedules() {
@@ -310,6 +311,8 @@ class ApiService {
   }
 
   //=====================end======================
+=======
+>>>>>>> Stashed changes
 }
 
 export const apiService = new ApiService();
