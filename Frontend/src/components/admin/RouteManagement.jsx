@@ -364,12 +364,18 @@ const RouteManagement = () => {
     <div className="route-management">
       <div className="management-header">
         <div className="header-left">
-          <h2>🛤️ Route Management</h2>
+          <div className="header-title">
+            <span className="header-icon">🛤️</span>
+            <h2>Route Management</h2>
+          </div>
           <p>Plan and optimize train routes by schedule</p>
         </div>
-        <button className="btn-primary" onClick={() => openForm()}>
-          ➕ Add New Route Schedule
-        </button>
+        <div className="header-right">
+          <button className="btn-primary" onClick={() => openForm()}>
+            <span className="btn-icon">➕</span>
+            <span className="btn-text">Add New Route Schedule</span>
+          </button>
+        </div>
       </div>
 
       <div className="management-controls">
@@ -385,11 +391,11 @@ const RouteManagement = () => {
         <div className="stats-summary">
           <div className="stat-item">
             <span className="stat-value">{processedSchedules.length}</span>
-            <span className="stat-label">Active Schedules</span>
+            <span className="stat-label" style={{ color: processedSchedules.length > 0 ? '#1e293b' : '#64748b' }}>Active Schedules</span>
           </div>
           <div className="stat-item">
             <span className="stat-value">{routes.length}</span>
-            <span className="stat-label">Total Routes</span>
+            <span className="stat-label" style={{ color: routes.length > 0 ? '#1e293b' : '#64748b' }}>Total Routes</span>
           </div>
         </div>
       </div>
