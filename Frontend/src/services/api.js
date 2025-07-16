@@ -31,7 +31,7 @@ class ApiService {
     return response.json();
   }
 
-
+  // Auth endpoints (perlu ditambahkan di backend)
   async login(credentials) {
     return this.request('/auth/login', {
       method: 'POST',
@@ -46,9 +46,9 @@ class ApiService {
     });
   }
 
-
+  // User endpoints (sesuai backend routes yang ada)
   async getProfile() {
-    return this.request('/auth/profile'); 
+    return this.request('/users/profile/me');
   }
 
   async getAllUsers() {
@@ -187,129 +187,6 @@ class ApiService {
       method: 'DELETE',
     });
   }
-
-  // Train Category endpoints
-  async getAllTrainCategories() {
-    return this.request('/train-categories');
-  }
-
-  async createTrainCategory(data) {
-    return this.request('/train-categories', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  // Carriage endpoints
-  async getAllCarriages() {
-    return this.request('/carriages');
-  }
-
-  async getCarriageById(id) {
-    return this.request(`/carriages/${id}`);
-  }
-
-  async createCarriage(data) {
-    return this.request('/carriages', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async updateCarriage(id, data) {
-    return this.request(`/carriages/${id}`, {
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async deleteCarriage(id) {
-    return this.request(`/carriages/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async getCarriagesByTrainId(trainId) {
-    return this.request(`/carriages/train/${trainId}`);
-  }
-
-  // Seat endpoints
-  async getAllSeats() {
-    return this.request('/seats');
-  }
-
-  async createSeat(data) {
-    return this.request('/seats', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async createMultipleSeats(data) {
-    return this.request('/seats/bulk', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async getSeatsByCarriageId(carriageId) {
-    return this.request(`/seats/carriage/${carriageId}`);
-  }
-
- // =================Train Schedule endpoints======================
-  async getAllTrainSchedules() {
-    return this.request('/train-schedules');
-  }
-
-  async addTrainSchedule(data) {
-    return this.request('/train-schedules', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async updateTrainSchedule(id, data) {
-    return this.request(`/train-schedules/${id}`, {
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async deleteTrainSchedule(id) {
-    return this.request(`/train-schedules/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Schedule Routes endpoints
-  async getScheduleRoutes(scheduleId) {
-    return this.request(`/schedule-routes?schedule_id=${scheduleId}`);
-  }
-
-  async addScheduleRoute(data) {
-    return this.request('/schedule-routes', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async deleteScheduleRoute(id) {
-    return this.request(`/schedule-routes/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Station endpoints
-  async getAllStations() {
-    return this.request('/stations');
-  }
-
-  // Train endpoints
-  async getAllTrains() {
-    return this.request('/trains');
-  }
-
-  //=====================end======================
 }
 
 export const apiService = new ApiService();
