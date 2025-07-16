@@ -404,108 +404,151 @@ const RouteManagement = () => {
       {showForm && (
         <div className="form-overlay">
           <div className="form-container large">
-            <div className="form-header">
-              <h3>{editingRoute ? 'Edit Route Schedule' : 'Add New Route Schedule'}</h3>
-              <div className="form-section">
-                <h3>Schedule Information</h3>
-                <div className="form-group">
-                  <label>Train Schedule *</label>
-                  <select
-                    value={formData.schedule_id}
-                    onChange={(e) => setFormData({...formData, schedule_id: e.target.value})}
-                    required
-                    disabled={editingRoute}
-                  >
-                    <option value="">Select Schedule</option>
-                    {schedules.map((schedule) => (
-                      <option key={schedule.id} value={schedule.id}>
-                        {schedule.Train?.train_name} - {schedule.schedule_date}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="route-form">
-
-
-              <div className="form-section">
+            <div className="form-body">
+              {/* Schedule Selection Section */}
+              <div className="form-section schedule-selection">
                 <div className="section-header">
-                  <h3>Station Routes</h3>
-                  <button type="button" className="btn-secondary" onClick={addRoute}>
-                    ➕ Add Station
-                  </button>
+                  <div className="section-title">
+                    <span className="section-icon">🚆</span>
+                    <h4>Schedule Information</h4>
+                  </div>
+                  <button className="close-btn" onClick={closeForm}>✕</button>
                 </div>
                 
-                <div className="routes-form">
-                  {formData.routes.map((route, index) => (
-                    <div key={index} className="route-form-item">
-                      <div className="route-header">
-                        <h4>Station #{route.station_order}</h4>
-                        {formData.routes.length > 1 && (
-                          <button
-                            type="button"
-                            className="btn-remove"
-                            onClick={() => removeRoute(index)}
-                          >
-                            🗑️
-                          </button>
-                        )}
-                      </div>
-                      
-                      <div className="form-row">
-                        <div className="form-group">
-                          <label>Station *</label>
-                          <select
-                            value={route.station_id}
-                            onChange={(e) => updateRoute(index, 'station_id', e.target.value)}
-                            required
-                          >
-                            <option value="">Select Station</option>
-                            {stations.map((station) => (
-                              <option key={station.id} value={station.id}>
-                                {station.station_name} ({station.station_code})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="form-group">
-                          <label>Arrival Time {index === 0 ? '' : '*'}</label>
-                          <input
-                            type="time"
-                            value={route.arrival_time}
-                            onChange={(e) => updateRoute(index, 'arrival_time', e.target.value)}
-                            required={index > 0}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Departure Time {index === formData.routes.length - 1 ? '' : '*'}</label>
-                          <input
-                            type="time"
-                            value={route.departure_time}
-                            onChange={(e) => updateRoute(index, 'departure_time', e.target.value)}
-                            required={index < formData.routes.length - 1}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="schedule-selector">
+                  <div className="form-group">
+                    <label>Select Train Schedule *</label>
+                    <select
+                      value={formData.schedule_id}
+                      onChange={(e) => setFormData({...formData, schedule_id: e.target.value})}
+                      required
+                      disabled={editingRoute}
+                      className={editingRoute ? 'disabled' : ''}
+                    >
+                      <option value="">Choose a train schedule...</option>
+                      {schedules.map((schedule) => (
+                        <option key={schedule.id} value={schedule.id}>
+                          {schedule.Train?.train_name} ({schedule.Train?.train_code}) - {schedule.schedule_date}
+                        </option>
+                      ))}
+                    </select>
+                    {editingRoute && (
+                      <span className="form-note">Schedule cannot be changed when editing routes</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={closeForm}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary">
-                  {editingRoute ? 'Update Schedule Routes' : 'Create Schedule Routes'}
-                </button>
-              </div>
-            </form>
+              {/* Routes Configuration Section */}
+              <form onSubmit={handleSubmit} className="route-form">
+                <div className="form-section routes-section">
+                  <div className="section-header">
+                    <div className="section-title">
+                      <span className="section-icon">🛤️</span>
+                      <h4>Station Routes Configuration</h4>
+                    </div>
+                    <button type="button" className="btn-add-route" onClick={addRoute}>
+                      <span className="btn-icon">➕</span>
+                      <span className="btn-text">Add Station</span>
+                    </button>
+                  </div>
+                  
+                  <div className="routes-container">
+                    {formData.routes.map((route, index) => (
+                      <div key={index} className="route-item">
+                        <div className="route-item-header">
+                          <div className="route-number">
+                            <span className="route-badge">{route.station_order}</span>
+                            <h5>Station #{route.station_order}</h5>
+                          </div>
+                          {formData.routes.length > 1 && (
+                            <button
+                              type="button"
+                              className="btn-remove-route"
+                              onClick={() => removeRoute(index)}
+                              title="Remove this station"
+                            >
+                              <span>🗑️</span>
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="route-item-content">
+                          <div className="form-grid">
+                            <div className="form-group station-selector">
+                              <label>Station *</label>
+                              <select
+                                value={route.station_id}
+                                onChange={(e) => updateRoute(index, 'station_id', e.target.value)}
+                                required
+                              >
+                                <option value="">Select Station</option>
+                                {stations.map((station) => (
+                                  <option key={station.id} value={station.id}>
+                                    {station.station_name} ({station.station_code})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            
+                            <div className="form-group time-input">
+                              <label>
+                                Arrival Time 
+                                {index === 0 ? (
+                                  <span className="optional-badge">Optional</span>
+                                ) : (
+                                  <span className="required-badge">Required</span>
+                                )}
+                              </label>
+                              <input
+                                type="time"
+                                value={route.arrival_time}
+                                onChange={(e) => updateRoute(index, 'arrival_time', e.target.value)}
+                                required={index > 0}
+                                placeholder="HH:MM"
+                              />
+                            </div>
+                            
+                            <div className="form-group time-input">
+                              <label>
+                                Departure Time 
+                                {index === formData.routes.length - 1 ? (
+                                  <span className="optional-badge">Optional</span>
+                                ) : (
+                                  <span className="required-badge">Required</span>
+                                )}
+                              </label>
+                              <input
+                                type="time"
+                                value={route.departure_time}
+                                onChange={(e) => updateRoute(index, 'departure_time', e.target.value)}
+                                required={index < formData.routes.length - 1}
+                                placeholder="HH:MM"
+                              />
+                            </div>
+                          </div>
+                      
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="form-actions">
+                  <button type="submit" className="btn-submit">
+                    <span className="btn-icon">{editingRoute ? '✓' : '+'}</span>
+                    <span className="btn-text">
+                      {editingRoute ? 'Update Schedule Routes' : 'Create Schedule Routes'}
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
+
 
       {/* Detail Modal */}
       {showDetail && selectedSchedule && (
