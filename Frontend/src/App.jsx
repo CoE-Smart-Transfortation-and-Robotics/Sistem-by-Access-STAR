@@ -10,6 +10,8 @@ import RegisterPage from './pages/auth/RegisterPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import TrainManagementPage from './pages/admin/TrainManagementPage';
+import RouteManagementPage from './pages/admin/RouteManagementPage';
+
 
 import TrainSchedulePage from './pages/admin/TrainSchedulePage';
 
@@ -66,7 +68,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
+            <Route 
+              path="/admin/route-planning" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <RouteManagementPage />
+                </ProtectedRoute>
+              } 
+            />
 
             <Route 
               path="/user/profile" 
