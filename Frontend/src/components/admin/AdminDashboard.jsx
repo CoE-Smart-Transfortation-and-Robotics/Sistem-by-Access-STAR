@@ -19,7 +19,7 @@ const AdminDashboard = () => {
       icon: '🚂',
       title: 'Train Management',
       description: 'Add, edit, and manage trains',
-      action: () => console.log('Train Management - Coming Soon'),
+      action: () => navigate('/admin/train-management'),
       color: '#EF4444'
     },
     {
@@ -28,7 +28,14 @@ const AdminDashboard = () => {
       description: 'Manage stations and locations',
       action: () => console.log('Station Management - Coming Soon'),
       color: '#06B6D4'
-    }
+    },
+    {
+    icon: '📅', 
+    title: 'Train Schedules', 
+    description: 'Manage train schedules and timetables', 
+    action: () => navigate('/admin/schedules'), 
+    color: '#EF4444'
+  },
   ];
 
   const allServices = [
@@ -131,7 +138,7 @@ const AdminDashboard = () => {
   const handleActionClick = (action) => {
     switch (action) {
       case 'train-fleet':
-        console.log('Train Fleet Management - Coming Soon');
+        navigate('/admin/train-management')
         break;
       case 'station-network':
         console.log('Station Network Management - Coming Soon');
