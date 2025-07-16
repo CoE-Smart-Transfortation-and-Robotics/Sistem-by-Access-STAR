@@ -12,8 +12,6 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import TrainManagementPage from './pages/admin/TrainManagementPage';
 
 import TrainSchedulePage from './pages/admin/TrainSchedulePage';
-import TrainManagementPage from './pages/admin/TrainManagementPage';
-
 
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';

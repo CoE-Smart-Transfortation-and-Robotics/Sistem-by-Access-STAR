@@ -90,11 +90,7 @@ export const AuthProvider = ({ children }) => {
     console.log('🚪 Logging out...');
     localStorage.removeItem('token');
     setUser(null);
-<<<<<<< Updated upstream
     setIsAuthenticated(false); 
-=======
-    console.log('✅ Logout complete');
->>>>>>> Stashed changes
   };
 
   const updateProfile = async (data) => {
