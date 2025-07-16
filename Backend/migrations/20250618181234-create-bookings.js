@@ -18,16 +18,6 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      seat_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'seats',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
-      },
       schedule_id: {
         type: Sequelize.INTEGER,
         allowNull: false,

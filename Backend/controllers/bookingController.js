@@ -1,5 +1,15 @@
 "use strict";
-const { Booking, Seat, Carriage, TrainSchedule, ScheduleRoute, sequelize } = require("../models");
+const {
+  Booking,
+  Station,
+  Train,
+  Seat,
+  Carriage,
+  TrainSchedule,
+  ScheduleRoute,
+  BookingPassenger,
+  sequelize,
+} = require("../models");
 
 module.exports = {
   async getAvailableSeats(req, res) {
@@ -43,10 +53,11 @@ module.exports = {
           AND ts.schedule_date = :schedule_date
           AND NOT EXISTS (
             SELECT 1
-            FROM bookings b
-            WHERE b.seat_id = s.id
+            FROM booking_passengers bp
+            JOIN bookings b ON bp.booking_id = b.id
+            WHERE bp.seat_id = s.id
               AND b.schedule_id = ts.id
-              AND b.status = 'confirmed'
+              AND b.status IN ('confirmed', 'pending')
               AND (
                 (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = :origin_station_id)
                   < (SELECT station_order FROM schedule_routes WHERE schedule_id = ts.id AND station_id = b.destination_station_id)
@@ -101,7 +112,7 @@ module.exports = {
       });
 
       if (!trainSchedule) {
-        throw new Error("TrainSchedule tidak ditemukan untuk kereta & tanggal tersebut.");
+        throw new Error("TrainSchedule tidak ditemukan.");
       }
 
       const schedule_id = trainSchedule.id;
@@ -109,29 +120,27 @@ module.exports = {
       const originRoute = await ScheduleRoute.findOne({
         where: { schedule_id, station_id: origin_station_id },
       });
-
       const destinationRoute = await ScheduleRoute.findOne({
         where: { schedule_id, station_id: destination_station_id },
       });
 
       if (!originRoute || !destinationRoute) {
-        throw new Error("Stasiun asal atau tujuan tidak ditemukan dalam rute.");
+        throw new Error("Stasiun asal/tujuan tidak ditemukan.");
       }
 
-      const distance = Math.abs(
-        destinationRoute.station_order - originRoute.station_order
-      );
-
-      const bookings = [];
+      const distance = Math.abs(destinationRoute.station_order - originRoute.station_order);
+      let totalBookingPrice = 0;
+      const seatIds = [];
 
       for (const passenger of passengers) {
         const overlapping = await sequelize.query(
           `
           SELECT 1
-          FROM bookings b
-          WHERE b.seat_id = :seat_id
+          FROM booking_passengers bp
+          JOIN bookings b ON bp.booking_id = b.id
+          WHERE bp.seat_id = :seat_id
             AND b.schedule_id = :schedule_id
-            AND b.status = 'confirmed'
+            AND b.status IN ('confirmed', 'pending')
             AND (
               (SELECT station_order FROM schedule_routes WHERE schedule_id = :schedule_id AND station_id = :origin_station_id)
                 < (SELECT station_order FROM schedule_routes WHERE schedule_id = :schedule_id AND station_id = b.destination_station_id)
@@ -154,57 +163,264 @@ module.exports = {
         );
 
         if (overlapping.length > 0) {
-          throw new Error(`Seat ${passenger.seat_id} sudah dibooking di rute konflik.`);
+          throw new Error(`Seat ${passenger.seat_id} sudah dibooking.`);
         }
 
         const seat = await Seat.findByPk(passenger.seat_id, {
-          include: {
-            model: Carriage,
-            attributes: ["class"],
-          },
+          include: { model: Carriage, attributes: ["class"] },
         });
 
         if (!seat || !seat.Carriage) {
-          throw new Error(`Data seat ${passenger.seat_id} atau carriage tidak ditemukan.`);
+          throw new Error(`Seat ${passenger.seat_id} atau carriage tidak ditemukan.`);
         }
 
-        const seatClass = seat.Carriage.class;
-        const pricePerSegment = {
+        const classPrice = {
           Ekonomi: 25000,
           Bisnis: 40000,
           Eksekutif: 60000,
-        };
+        }[seat.Carriage.class];
 
-        const segmentPrice = pricePerSegment[seatClass];
-        if (!segmentPrice) {
-          throw new Error(`Kelas ${seatClass} tidak dikenali.`);
+        if (!classPrice) {
+          throw new Error(`Kelas ${seat.Carriage.class} tidak dikenali.`);
         }
 
-        const totalPrice = segmentPrice * distance;
+        totalBookingPrice += classPrice * distance;
+        seatIds.push(passenger.seat_id);
+      }
 
-        const booking = await Booking.create(
-          {
-            user_id,
-            seat_id: passenger.seat_id,
-            schedule_id,
-            origin_station_id,
-            destination_station_id,
-            status: "pending",
-            price: totalPrice,
-            booking_date: new Date(),
-          },
-          { transaction }
-        );
+      const booking = await Booking.create({
+        user_id,
+        schedule_id,
+        origin_station_id,
+        destination_station_id,
+        status: "pending",
+        price: totalBookingPrice,
+        booking_date: new Date(),
+      }, { transaction });
 
-        bookings.push(booking);
+      for (const passenger of passengers) {
+        await BookingPassenger.create({
+          booking_id: booking.id,
+          name: passenger.name,
+          nik: passenger.nik,
+          seat_id: passenger.seat_id,
+        }, { transaction });
       }
 
       await transaction.commit();
-      return res.status(201).json({ message: "Booking berhasil", bookings });
+
+      const [completeBooking, originStation, destinationStation, seatsInfo] = await Promise.all([
+        Booking.findByPk(booking.id, {
+          attributes: [
+            'id', 
+            'user_id', 
+            'schedule_id', 
+            'origin_station_id', 
+            'destination_station_id', 
+            'status', 
+            'price', 
+            'booking_date'
+          ],
+          include: [
+            {
+              model: BookingPassenger,
+              as: "passengers",
+              attributes: ["name", "nik", "seat_id"],
+            },
+            {
+              model: TrainSchedule,
+              attributes: ["schedule_date"],
+              include: [{ model: Train, attributes: ["train_name", "train_code"] }]
+            }
+          ]
+        }),
+        Station.findByPk(origin_station_id, { attributes: ["id", "station_name"] }),
+        Station.findByPk(destination_station_id, { attributes: ["id", "station_name"] }),
+        Promise.all(
+          seatIds.map(async (seatId) => {
+            const seat = await Seat.findByPk(seatId, {
+              include: {
+                model: Carriage,
+                attributes: ["class", "carriage_number"],
+              }
+            });
+            return {
+              seat_id: seat.id,
+              seat_number: seat.seat_number,
+              class: seat.Carriage.class,
+              carriage_number: seat.Carriage.carriage_number
+            };
+          })
+        )
+      ]);
+
+      return res.status(201).json({
+        message: "Booking berhasil",
+        data: {
+          booking_id: completeBooking.id,
+          user_id: completeBooking.user_id,
+          status: completeBooking.status,
+          total_price: completeBooking.price,
+          booking_date: completeBooking.booking_date,
+          schedule: {
+            schedule_id: completeBooking.schedule_id,
+            schedule_date: completeBooking.TrainSchedule.schedule_date,
+            train_name: completeBooking.TrainSchedule.Train.train_name,
+            train_code: completeBooking.TrainSchedule.Train.train_code,
+          },
+          route: {
+            origin_station: {
+              id: originStation.id,
+              name: originStation.station_name
+            },
+            destination_station: {
+              id: destinationStation.id,
+              name: destinationStation.station_name
+            }
+          },
+          passengers: completeBooking.passengers.map((passenger, index) => ({
+            name: passenger.name,
+            nik: passenger.nik,
+            seat: seatsInfo[index]
+          })),
+          summary: {
+            passenger_count: passengers.length,
+            total_seats: seatIds.length,
+            price_per_person: totalBookingPrice / passengers.length
+          }
+        }
+      });
+
     } catch (err) {
-      await transaction.rollback();
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
       console.error("Error createBooking:", err);
       return res.status(400).json({ message: err.message || "Gagal booking" });
+    }
+  },
+
+  async cancelBooking(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const bookingId = req.params.id;
+      const userId = req.user.id;
+
+      const booking = await Booking.findOne({
+        attributes: [
+          'id', 
+          'user_id', 
+          'schedule_id', 
+          'origin_station_id', 
+          'destination_station_id', 
+          'status', 
+          'price', 
+          'booking_date'
+        ],
+        where: {
+          id: bookingId,
+          user_id: userId,
+        },
+        include: [{ 
+          model: TrainSchedule,
+          attributes: ['id', 'train_id', 'schedule_date']
+        }],
+        transaction,
+      });
+
+      if (!booking) {
+        await transaction.rollback();
+        return res.status(404).json({ message: "Booking tidak ditemukan." });
+      }
+
+      if (booking.status === "cancelled") {
+        await transaction.rollback();
+        return res.status(400).json({ message: "Booking ini sudah dibatalkan sebelumnya." });
+      }
+
+      const originRoute = await ScheduleRoute.findOne({
+        where: {
+          schedule_id: booking.schedule_id,
+          station_id: booking.origin_station_id,
+        },
+        transaction,
+      });
+
+      if (!originRoute || !originRoute.departure_time) {
+        await transaction.rollback();
+        return res.status(400).json({ message: "Waktu keberangkatan tidak tersedia." });
+      }
+
+      const scheduleDate = new Date(booking.TrainSchedule.schedule_date);
+      const departureTime = new Date(`${scheduleDate.toISOString().split("T")[0]}T${originRoute.departure_time}`);
+      const now = new Date();
+      const diffInMinutes = (departureTime - now) / (1000 * 60);
+
+      if (diffInMinutes < 120) {
+        await transaction.rollback();
+        return res.status(400).json({
+          message: "Pembatalan hanya diperbolehkan minimal 2 jam sebelum keberangkatan.",
+        });
+      }
+
+      booking.status = "cancelled";
+      await booking.save({ transaction });
+
+      await transaction.commit();
+      return res.status(200).json({ message: "Booking berhasil dibatalkan." });
+    } catch (err) {
+      await transaction.rollback();
+      console.error("Error cancelBooking:", err);
+      return res.status(500).json({ message: "Terjadi kesalahan saat membatalkan booking." });
+    }
+  },
+
+  async getMyBookings(req, res) {
+    try {
+      const userId = req.user.id;
+      const bookings = await Booking.findAll({
+        attributes: [
+          'id', 
+          'user_id', 
+          'schedule_id', 
+          'origin_station_id', 
+          'destination_station_id', 
+          'status', 
+          'price', 
+          'booking_date',
+          'created_at',
+          'updated_at'
+        ],
+        where: { user_id: userId },
+        order: [["created_at", "DESC"]],
+        include: [
+          {
+            model: BookingPassenger,
+            as: "passengers",
+            attributes: ["name", "nik", "seat_id"],
+          },
+          {
+            model: TrainSchedule,
+            attributes: ["schedule_date"],
+            include: [{ model: Train, attributes: ["train_name", "train_code"] }]
+          },
+          {
+            model: Station,
+            as: "OriginStation",
+            attributes: ["station_name"]
+          },
+          {
+            model: Station,
+            as: "DestinationStation", 
+            attributes: ["station_name"]
+          }
+        ],
+      });
+
+      return res.status(200).json(bookings);
+    } catch (err) {
+      console.error("Error getMyBookings:", err);
+      return res.status(500).json({ message: "Gagal mengambil data booking." });
     }
   },
 };
