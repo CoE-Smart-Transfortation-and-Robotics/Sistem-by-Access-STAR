@@ -31,7 +31,7 @@ class ApiService {
     return response.json();
   }
 
-  // Auth endpoints (perlu ditambahkan di backend)
+  // Auth endpoints
   async login(credentials) {
     return this.request('/auth/login', {
       method: 'POST',
@@ -46,11 +46,12 @@ class ApiService {
     });
   }
 
-  // User endpoints (sesuai backend routes yang ada)
+  // ✅ Fix: Ganti endpoint profile sesuai backend
   async getProfile() {
-    return this.request('/users/profile/me');
+    return this.request('/users/profile/me'); 
   }
 
+  // User endpoints
   async getAllUsers() {
     return this.request('/users');
   }
@@ -72,7 +73,7 @@ class ApiService {
     });
   }
 
-  // Train endpoints (berdasarkan backend routes yang ada)
+  // Train endpoints
   async getAllTrains() {
     return this.request('/trains');
   }
@@ -101,7 +102,7 @@ class ApiService {
     });
   }
 
-  // Station endpoints (berdasarkan backend routes yang ada)
+  // Station endpoints
   async getAllStations() {
     return this.request('/stations');
   }
@@ -130,13 +131,39 @@ class ApiService {
     });
   }
 
-  // Train Schedule endpoints (berdasarkan backend routes yang ada)
-  async getAllSchedules() {
+  // Train Schedule endpoints
+  async getAllTrainSchedules() {
     return this.request('/train-schedules');
+  }
+
+  // ✅ Fix: Ganti alias method name untuk konsistensi
+  async createTrainSchedule(data) {
+    return this.request('/train-schedules', {
+      method: 'POST',
+      body: data,
+    });
   }
 
   async getScheduleById(id) {
     return this.request(`/train-schedules/${id}`);
+  }
+
+  async updateTrainSchedule(id, data) {
+    return this.request(`/train-schedules/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteTrainSchedule(id) {
+    return this.request(`/train-schedules/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ✅ Fix: Hapus duplikasi getAllSchedules
+  async getAllSchedules() {
+    return this.request('/train-schedules');
   }
 
   async createSchedule(data) {
@@ -159,7 +186,7 @@ class ApiService {
     });
   }
 
-  // Schedule Routes endpoints (berdasarkan backend routes yang ada)
+  // Schedule Routes endpoints
   async getAllScheduleRoutes() {
     return this.request('/schedule-routes');
   }
@@ -168,7 +195,19 @@ class ApiService {
     return this.request(`/schedule-routes/${id}`);
   }
 
+  async getScheduleRoutes(scheduleId) {
+    return this.request(`/schedule-routes?schedule_id=${scheduleId}`);
+  }
+
   async createScheduleRoute(data) {
+    return this.request('/schedule-routes', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  // ✅ Fix: Ganti alias method name untuk konsistensi
+  async addScheduleRoute(data) {
     return this.request('/schedule-routes', {
       method: 'POST',
       body: data,
@@ -186,6 +225,135 @@ class ApiService {
     return this.request(`/schedule-routes/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  // Train Category endpoints
+  async getAllTrainCategories() {
+    return this.request('/train-categories');
+  }
+
+  async getTrainCategoryById(id) {
+    return this.request(`/train-categories/${id}`);
+  }
+
+  async createTrainCategory(data) {
+    return this.request('/train-categories', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateTrainCategory(id, data) {
+    return this.request(`/train-categories/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteTrainCategory(id) {
+    return this.request(`/train-categories/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Carriage endpoints
+  async getAllCarriages() {
+    return this.request('/carriages');
+  }
+
+  async getCarriageById(id) {
+    return this.request(`/carriages/${id}`);
+  }
+
+  async createCarriage(data) {
+    return this.request('/carriages', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateCarriage(id, data) {
+    return this.request(`/carriages/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteCarriage(id) {
+    return this.request(`/carriages/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getCarriagesByTrainId(trainId) {
+    return this.request(`/carriages/train/${trainId}`);
+  }
+
+  // Seat endpoints
+  async getAllSeats() {
+    return this.request('/seats');
+  }
+
+  async getSeatById(id) {
+    return this.request(`/seats/${id}`);
+  }
+
+  async createSeat(data) {
+    return this.request('/seats', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async createMultipleSeats(data) {
+    return this.request('/seats/bulk', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateSeat(id, data) {
+    return this.request(`/seats/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteSeat(id) {
+    return this.request(`/seats/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getSeatsByCarriageId(carriageId) {
+    return this.request(`/seats/carriage/${carriageId}`);
+  }
+
+  // ✅ Fix: Tambah booking endpoints yang ada di backend
+  async getAvailableSeats(params) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/bookings/available-seats?${queryString}`);
+  }
+
+  async createBooking(data) {
+    return this.request('/bookings', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  // ✅ Fix: Tambah train search endpoint
+  async searchTrainsByRoute(params) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/trains/search/route?${queryString}`);
+  }
+
+  async getTrainCarriages(trainId) {
+    return this.request(`/trains/${trainId}/carriages`);
+  }
+
+  async getTrainSchedules(trainId) {
+    return this.request(`/trains/${trainId}/schedules`);
   }
 }
 

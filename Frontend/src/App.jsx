@@ -7,8 +7,11 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
 // Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
+import TrainManagementPage from './pages/admin/TrainManagementPage';
+
+import TrainSchedulePage from './pages/admin/TrainSchedulePage';
 
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';
@@ -16,11 +19,21 @@ import ProfilePage from './pages/user/ProfilePage';
 
 import './App.css';
 
-// Component for role-based redirect
 const RoleBasedRedirect = () => {
-  const { user } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
   
-  if (user?.role === 'admin') {
+  // Tunggu loading selesai dulu
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  // Kalau belum login, redirect ke login
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Kalau sudah login, redirect sesuai role
+  if (user.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
   }
   
@@ -37,15 +50,6 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Admin Protected Routes */}
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
             <Route 
               path="/admin/users" 
               element={
@@ -54,16 +58,16 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
-            {/* User Protected Routes */}
             <Route 
-              path="/user/dashboard" 
+              path="/admin/train-management" 
               element={
-                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
-                  <UserDashboardPage />
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <TrainManagementPage />
                 </ProtectedRoute>
               } 
             />
+
+
             <Route 
               path="/user/profile" 
               element={
@@ -73,12 +77,36 @@ function App() {
               } 
             />
 
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/schedules" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <TrainSchedulePage />
+                </ProtectedRoute>
+              } 
+            />
+
             {/* Default Route with Role-based Redirect */}
+            {/* ✅ Hapus ProtectedRoute wrapper */}
             <Route 
               path="/" 
+              element={<RoleBasedRedirect />}
+            />
+
+            {/* User Dashboard */}
+            <Route 
+              path="/user/dashboard" 
               element={
-                <ProtectedRoute>
-                  <RoleBasedRedirect />
+                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
+                  <UserDashboardPage />
                 </ProtectedRoute>
               } 
             />
