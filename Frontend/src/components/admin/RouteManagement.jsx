@@ -2,6 +2,56 @@ import { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import '../../styles/admin/RouteManagement.css';
 
+const StationStop = ({ station, isFirst, isLast, isLeft }) => {
+  const { Station, arrival_time, departure_time } = station;
+
+  // Komponen Kartu untuk menampilkan detail stasiun
+  const Card = (
+    <div className={`station-card-wrapper ${isLeft ? 'station-left' : 'station-right'}`}>
+      <div className="station-card">
+        <div className="station-header">
+          <h3 className="station-name">{Station?.station_name}</h3>
+          <span className="station-code">{Station?.station_code}</span>
+        </div>
+        <div className="station-times">
+          {arrival_time && (
+            <div className="time-detail">
+              <span className="time-label">Tiba:</span>
+              <span className="time-value">{arrival_time.slice(0, 5)} WIB</span>
+            </div>
+          )}
+          {departure_time && (
+            <div className="time-detail">
+              <span className="time-label">Berangkat:</span>
+              <span className="time-value">{departure_time.slice(0, 5)} WIB</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Placeholder untuk sisi yang kosong
+  const Placeholder = <div className="station-placeholder"></div>;
+
+  return (
+    <div className="station-stop-container">
+      {/* Menentukan posisi kartu (kiri) atau placeholder berdasarkan prop isLeft */}
+      {isLeft ? Card : Placeholder}
+      
+      {/* Titik di tengah timeline */}
+      <div className="timeline-dot-container">
+        <div className={`timeline-dot ${isFirst || isLast ? 'timeline-dot-special' : 'timeline-dot-regular'}`}>
+          <div className="dot-inner"></div>
+        </div>
+      </div>
+
+      {/* Menentukan posisi placeholder atau kartu (kanan) */}
+      {isLeft ? Placeholder : Card}
+    </div>
+  );
+};
+
 const RouteManagement = () => {
   const [routes, setRoutes] = useState([]);
   const [schedules, setSchedules] = useState([]);
@@ -574,38 +624,23 @@ const RouteManagement = () => {
                   <span className="value">{selectedSchedule.total_stations}</span>
                 </div>
               </div>
-
               <div className="route-timeline">
                 <h4>Route Timeline</h4>
-                <div className="timeline">
-                  {selectedSchedule.routes.map((route, index) => (
-                    <div key={route.id} className="timeline-item">
-                      <div className="timeline-marker">
-                        <div className="marker-dot"></div>
-                        {index < selectedSchedule.routes.length - 1 && <div className="marker-line"></div>}
-                      </div>
-                      <div className="timeline-content">
-                        <div className="station-info">
-                          <h5>{route.Station?.station_name}</h5>
-                          <span className="station-code">{route.Station?.station_code}</span>
-                        </div>
-                        <div className="time-info">
-                          {route.arrival_time && (
-                            <div className="time-item">
-                              <span className="time-label">Arrival:</span>
-                              <span className="time-value">{route.arrival_time}</span>
-                            </div>
-                          )}
-                          {route.departure_time && (
-                            <div className="time-item">
-                              <span className="time-label">Departure:</span>
-                              <span className="time-value">{route.departure_time}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="timeline-container">
+                  {/* Timeline Vertical Line */}
+                  <div className="timeline-vertical-line"></div>
+                  
+                  <div className="timeline-stations">
+                    {selectedSchedule.routes.map((route, index) => (
+                      <StationStop
+                        key={route.id}
+                        station={route}
+                        isFirst={index === 0}
+                        isLast={index === selectedSchedule.routes.length - 1}
+                        isLeft={index % 2 === 0}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
