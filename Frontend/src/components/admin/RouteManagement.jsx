@@ -406,10 +406,6 @@ const RouteManagement = () => {
           <div className="form-container large">
             <div className="form-header">
               <h3>{editingRoute ? 'Edit Route Schedule' : 'Add New Route Schedule'}</h3>
-              <button className="close-btn" onClick={closeForm}>✕</button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="route-form">
               <div className="form-section">
                 <h3>Schedule Information</h3>
                 <div className="form-group">
@@ -429,6 +425,10 @@ const RouteManagement = () => {
                   </select>
                 </div>
               </div>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="route-form">
+
 
               <div className="form-section">
                 <div className="section-header">
