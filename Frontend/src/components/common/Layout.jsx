@@ -60,6 +60,13 @@ const Layout = ({ children }) => {
                       <span className="btn-icon">👥</span>
                       User Mgt
                     </button>
+                    <button 
+                      className="nav-btn admin-btn"
+                      onClick={() => handleNavigation('/admin/train-management')}
+                    >
+                      <span className="btn-icon">🚂</span>
+                      Trains
+                    </button>
                   </div>
                 )}
                 
@@ -72,11 +79,7 @@ const Layout = ({ children }) => {
                       <span className="btn-icon">🏠</span>
                       Dashboard
                     </button>
-                  </div>
-                )}
-                
-                <div className="nav-group">
-                  <button 
+                    <button 
                     className="nav-btn profile-btn"
                     onClick={() => handleNavigation('/user/profile')}
                   >
@@ -90,7 +93,8 @@ const Layout = ({ children }) => {
                     <span className="btn-icon">🚪</span>
                     Logout
                   </button>
-                </div>
+                  </div>
+                )}
               </div>
             </nav>
           )}
@@ -103,10 +107,52 @@ const Layout = ({ children }) => {
         </div>
       </main>
 
-      {/* Footer (optional) */}
+      {/* Enhanced Footer */}
       <footer className="app-footer">
         <div className="footer-container">
-          <p>&copy; 2025 STAR System. All rights reserved.</p>
+          <div className="footer-content">
+            <div className="footer-brand">
+              <span className="footer-logo">🚄</span>
+              <div className="footer-text">
+                <h3 className="footer-title">STAR System</h3>
+                <p className="footer-tagline">Sistem by Access STAR</p>
+              </div>
+            </div>
+            <div className="footer-links">
+              <div className="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                  <li><a href="#dashboard">Dashboard</a></li>
+                  <li><a href="#reports">Reports</a></li>
+                  <li><a href="#analytics">Analytics</a></li>
+                </ul>
+              </div>
+              <div className="footer-section">
+                <h4>Support</h4>
+                <ul>
+                  <li><a href="#help">Help Center</a></li>
+                  <li><a href="#contact">Contact</a></li>
+                  <li><a href="#docs">Documentation</a></li>
+                </ul>
+              </div>
+              <div className="footer-section">
+                <h4>System</h4>
+                <ul>
+                  <li><a href="#status">Status</a></li>
+                  <li><a href="#security">Security</a></li>
+                  <li><a href="#api">API</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2025 STAR System. All rights reserved.</p>
+            <div className="footer-meta">
+              <span>Version 1.0.0</span>
+              <span>•</span>
+              <span>Last updated: {new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

@@ -412,7 +412,6 @@ button {
     transition: var(--transition-glow);
     position: relative;
     overflow: hidden;
-    margin-top: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: var(--shadow-medium);

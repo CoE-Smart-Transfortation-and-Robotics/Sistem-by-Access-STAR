@@ -11,56 +11,88 @@ const UserDashboard = () => {
       title: 'Beli Tiket Kereta', 
       action: 'book-ticket',
       color: '#2E86AB',
-      description: 'Pesan tiket untuk perjalanan Anda'
+      description: 'Pesan tiket untuk perjalanan Anda',
+      category: 'booking'
     },
     { 
       icon: '📋', 
       title: 'Riwayat Pemesanan', 
       action: 'view-bookings',
       color: '#A23B72',
-      description: 'Lihat dan kelola pemesanan'
+      description: 'Lihat dan kelola pemesanan',
+      category: 'booking'
     },
     { 
       icon: '💳', 
       title: 'Pembatalan Tiket', 
       action: 'cancel-booking',
       color: '#F18F01',
-      description: 'Batalkan tiket yang sudah dipesan'
+      description: 'Batalkan tiket yang sudah dipesan',
+      category: 'booking'
     },
     { 
       icon: '📅', 
       title: 'Ubah Jadwal', 
       action: 'reschedule',
       color: '#C73E1D',
-      description: 'Reschedule perjalanan Anda'
+      description: 'Reschedule perjalanan Anda',
+      category: 'booking'
     },
     { 
       icon: '🚂', 
       title: 'KA Bandara', 
       action: 'airport-train',
       color: '#4A90E2',
-      description: 'Layanan kereta ke bandara'
+      description: 'Layanan kereta ke bandara',
+      category: 'service'
     },
     { 
       icon: '🍽️', 
       title: 'Railfood', 
       action: 'railfood',
       color: '#7B68EE',
-      description: 'Pesan makanan di kereta'
+      description: 'Pesan makanan di kereta',
+      category: 'service'
     },
     { 
       icon: 'ℹ️', 
       title: 'Informasi KRL', 
       action: 'krl-info',
       color: '#20B2AA',
-      description: 'Jadwal dan info KRL'
+      description: 'Jadwal dan info KRL',
+      category: 'information'
     },
     { 
       icon: '📦', 
       title: 'KAI Logistik', 
       action: 'logistics',
       color: '#FF6347',
-      description: 'Layanan pengiriman barang'
+      description: 'Layanan pengiriman barang',
+      category: 'service'
+    }
+  ];
+
+  const recentActivities = [
+    {
+      icon: '🎫',
+      title: 'Pemesanan Tiket',
+      description: 'Belum ada pemesanan',
+      time: 'Sekarang',
+      type: 'booking'
+    },
+    {
+      icon: '💰',
+      title: 'Riwayat Pembayaran',
+      description: 'Belum ada pembayaran',
+      time: 'Sekarang',
+      type: 'payment'
+    },
+    {
+      icon: '⭐',
+      title: 'Poin Reward',
+      description: 'Mulai kumpulkan poin',
+      time: 'Sekarang',
+      type: 'reward'
     }
   ];
 
@@ -139,7 +171,7 @@ const UserDashboard = () => {
           {menuItems.map((item, index) => (
             <div 
               key={index} 
-              className="service-card"
+              className={`service-card ${item.category}`}
               onClick={() => handleMenuClick(item.action)}
             >
               <div className="service-header">
@@ -160,55 +192,101 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Statistics Dashboard */}
-      <div className="stats-dashboard">
-        <h2>Statistik Perjalanan</h2>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-header">
-              <span className="stat-icon">🎫</span>
-              <span className="stat-trend positive">+0%</span>
+      {/* Statistics and Recent Activities */}
+      <div className="dashboard-content">
+        {/* Statistics Dashboard */}
+        <div className="stats-dashboard">
+          <h2>Statistik Perjalanan</h2>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-header">
+                <span className="stat-icon">🎫</span>
+                <span className="stat-trend positive">+0%</span>
+              </div>
+              <div className="stat-body">
+                <h3>0</h3>
+                <p>Total Pemesanan</p>
+                <span className="stat-period">Bulan ini</span>
+              </div>
             </div>
-            <div className="stat-body">
-              <h3>0</h3>
-              <p>Total Pemesanan</p>
-              <span className="stat-period">Bulan ini</span>
+            
+            <div className="stat-card">
+              <div className="stat-header">
+                <span className="stat-icon">🚂</span>
+                <span className="stat-trend positive">+0%</span>
+              </div>
+              <div className="stat-body">
+                <h3>0</h3>
+                <p>Perjalanan Selesai</p>
+                <span className="stat-period">Total</span>
+              </div>
+            </div>
+            
+            <div className="stat-card">
+              <div className="stat-header">
+                <span className="stat-icon">💰</span>
+                <span className="stat-trend neutral">0%</span>
+              </div>
+              <div className="stat-body">
+                <h3>Rp 0</h3>
+                <p>Total Pengeluaran</p>
+                <span className="stat-period">Tahun ini</span>
+              </div>
+            </div>
+            
+            <div className="stat-card">
+              <div className="stat-header">
+                <span className="stat-icon">⭐</span>
+                <span className="stat-trend positive">+0</span>
+              </div>
+              <div className="stat-body">
+                <h3>0</h3>
+                <p>Poin Reward</p>
+                <span className="stat-period">Tersedia</span>
+              </div>
             </div>
           </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <span className="stat-icon">🚂</span>
-              <span className="stat-trend positive">+0%</span>
+        </div>
+
+        {/* Recent Activities */}
+        <div className="recent-activities">
+          <h2>Aktivitas Terbaru</h2>
+          <div className="activities-container">
+            <div className="activities-list">
+              {recentActivities.map((activity, index) => (
+                <div key={index} className={`activity-item activity-${activity.type}`}>
+                  <div className="activity-icon">
+                    {activity.icon}
+                  </div>
+                  <div className="activity-content">
+                    <h4>{activity.title}</h4>
+                    <p>{activity.description}</p>
+                    <span className="activity-time">{activity.time}</span>
+                  </div>
+                  <div className="activity-status">
+                    <div className="status-dot"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="stat-body">
-              <h3>0</h3>
-              <p>Perjalanan Selesai</p>
-              <span className="stat-period">Total</span>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <span className="stat-icon">💰</span>
-              <span className="stat-trend neutral">0%</span>
-            </div>
-            <div className="stat-body">
-              <h3>Rp 0</h3>
-              <p>Total Pengeluaran</p>
-              <span className="stat-period">Tahun ini</span>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <span className="stat-icon">⭐</span>
-              <span className="stat-trend positive">+0</span>
-            </div>
-            <div className="stat-body">
-              <h3>0</h3>
-              <p>Poin Reward</p>
-              <span className="stat-period">Tersedia</span>
+            
+            <div className="activity-summary">
+              <h3>Ringkasan Hari Ini</h3>
+              <div className="summary-stats">
+                <div className="summary-item">
+                  <span className="summary-number">0</span>
+                  <span className="summary-label">Pemesanan</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-number">0</span>
+                  <span className="summary-label">Perjalanan</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-number">0</span>
+                  <span className="summary-label">Poin Earned</span>
+                </div>
+              </div>
+            
             </div>
           </div>
         </div>

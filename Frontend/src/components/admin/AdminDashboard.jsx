@@ -147,7 +147,7 @@ const AdminDashboard = () => {
         console.log('Schedule Management - Coming Soon');
         break;
       case 'route-planning':
-        console.log('Route Planning - Coming Soon');
+        navigate('/admin/route-planning');
         break;
       case 'booking-system':
         console.log('Booking System - Coming Soon');
