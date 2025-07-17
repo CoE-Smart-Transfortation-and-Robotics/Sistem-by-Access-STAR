@@ -170,7 +170,6 @@ body {
     display: flex;
     align-items: center;
     gap: 18px;
-    font-size: 1.1rem;
     opacity: 0.95;
     animation: slideInLeft 0.8s ease-out forwards;
     padding: 15px 20px;
@@ -414,7 +413,6 @@ button {
     overflow: hidden;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: var(--shadow-medium);
 }
 
 button::before {
@@ -430,7 +428,6 @@ button::before {
 
 button:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-heavy);
     filter: brightness(1.1);
 }
 

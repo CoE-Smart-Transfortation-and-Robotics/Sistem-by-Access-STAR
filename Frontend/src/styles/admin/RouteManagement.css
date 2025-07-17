@@ -747,7 +747,7 @@
 
 .form-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     align-items: start;
 }
@@ -1577,6 +1577,8 @@
 
 .station-header {
     margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .station-name {

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/auth/auth.css';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
