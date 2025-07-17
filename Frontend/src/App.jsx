@@ -32,9 +32,9 @@ const RoleBasedRedirect = () => {
     return <div>Loading...</div>;
   }
   
-  // Kalau belum login, redirect ke login
+  // Kalau belum login, redirect ke landing page
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
   
   // Kalau sudah login, redirect sesuai role
