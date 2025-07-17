@@ -32,9 +32,15 @@ const authorizeRole = require("../middlewares/roleMiddleware");
  *         carriage_id:
  *           type: integer
  *           description: ID gerbong
+ *         carriage_number:
+ *           type: string
+ *           description: Nomor gerbong
  *         train_name:
  *           type: string
  *           description: Nama kereta
+ *         is_booked:
+ *           type: boolean
+ *           description: Status apakah kursi sudah dibooking
  *     
  *     Passenger:
  *       type: object
@@ -201,7 +207,7 @@ const authorizeRole = require("../middlewares/roleMiddleware");
  * /api/bookings/available-seats:
  *   get:
  *     summary: Lihat kursi yang tersedia
- *     description: Mendapatkan daftar kursi yang tersedia untuk perjalanan tertentu, diurutkan berdasarkan kelas (Ekonomi, Bisnis, Eksekutif)
+ *     description: Mendapatkan daftar kursi yang tersedia untuk perjalanan tertentu, diurutkan berdasarkan kelas (Ekonomi, Bisnis, Eksekutif). Kursi yang sudah dibooking akan memiliki status is_booked = true.
  *     tags: [Bookings]
  *     parameters:
  *       - in: query
@@ -247,12 +253,16 @@ const authorizeRole = require("../middlewares/roleMiddleware");
  *                 seat_number: "1A"
  *                 class: "Ekonomi"
  *                 carriage_id: 1
+ *                 carriage_number: "1"
  *                 train_name: "Argo Bromo Anggrek"
+ *                 is_booked: false
  *               - seat_id: 2
  *                 seat_number: "1B"
  *                 class: "Ekonomi"
  *                 carriage_id: 1
+ *                 carriage_number: "1"
  *                 train_name: "Argo Bromo Anggrek"
+ *                 is_booked: true
  *       400:
  *         description: Parameter tidak lengkap
  *         content:
@@ -294,7 +304,17 @@ router.get("/available-seats", bookingController.getAvailableSeats);
  * /api/bookings:
  *   post:
  *     summary: Booking kursi kereta
- *     description: Membuat booking baru untuk satu atau beberapa penumpang. Sistem akan mengecek ketersediaan kursi dan menghitung harga berdasarkan kelas dan jarak perjalanan.
+ *     description: |
+ *       Membuat booking baru untuk satu atau beberapa penumpang. Sistem akan:
+ *       - Mengecek ketersediaan kursi berdasarkan overlap rute perjalanan
+ *       - Menghitung harga berdasarkan kelas (Ekonomi: 25.000, Bisnis: 40.000, Eksekutif: 60.000) dan jarak perjalanan
+ *       - Memvalidasi bahwa waktu keberangkatan belum lewat
+ *       - Menggunakan timezone Asia/Jakarta untuk validasi waktu
+ *       - Menyimpan booking dengan status "pending"
+ *       
+ *       Pricing formula: `(base_price * distance) * jumlah_penumpang`
+ *       
+ *       Distance dihitung dari selisih station_order antara stasiun asal dan tujuan.
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
@@ -348,6 +368,45 @@ router.get("/available-seats", bookingController.getAvailableSeats);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/BookingResponse'
+ *             example:
+ *               message: "Booking berhasil"
+ *               data:
+ *                 booking_id: 1
+ *                 user_id: 1
+ *                 status: "pending"
+ *                 total_price: 150000
+ *                 booking_date: "2024-12-20T10:30:00.000Z"
+ *                 schedule:
+ *                   schedule_id: 1
+ *                   schedule_date: "2024-12-25"
+ *                   train_name: "Argo Bromo Anggrek"
+ *                   train_code: "ABA"
+ *                 route:
+ *                   origin_station:
+ *                     id: 1
+ *                     name: "Gambir"
+ *                   destination_station:
+ *                     id: 5
+ *                     name: "Surabaya Gubeng"
+ *                 passengers:
+ *                   - name: "John Doe"
+ *                     nik: "1234567890123456"
+ *                     seat:
+ *                       seat_id: 1
+ *                       seat_number: "1A"
+ *                       class: "Ekonomi"
+ *                       carriage_number: "1"
+ *                   - name: "Jane Smith"
+ *                     nik: "6543210987654321"
+ *                     seat:
+ *                       seat_id: 2
+ *                       seat_number: "1B"
+ *                       class: "Ekonomi"
+ *                       carriage_number: "1"
+ *                 summary:
+ *                   passenger_count: 2
+ *                   total_seats: 2
+ *                   price_per_person: 75000
  *       400:
  *         description: Gagal booking (kursi sudah dibooking, data tidak valid, dll)
  *         content:
@@ -370,6 +429,30 @@ router.get("/available-seats", bookingController.getAvailableSeats);
  *                 summary: Stasiun tidak ditemukan
  *                 value:
  *                   message: "Stasiun asal/tujuan tidak ditemukan."
+ *               invalid_route:
+ *                 summary: Rute tidak valid
+ *                 value:
+ *                   message: "Stasiun asal harus sebelum stasiun tujuan."
+ *               departure_passed:
+ *                 summary: Waktu keberangkatan sudah lewat
+ *                 value:
+ *                   message: "Booking gagal: waktu keberangkatan sudah lewat."
+ *               invalid_passengers:
+ *                 summary: Data penumpang tidak valid
+ *                 value:
+ *                   message: "Daftar penumpang wajib diisi minimal 1."
+ *               passenger_data_incomplete:
+ *                 summary: Data penumpang tidak lengkap
+ *                 value:
+ *                   message: "Setiap penumpang harus memiliki name, nik, dan seat_id."
+ *               seat_not_found:
+ *                 summary: Kursi tidak ditemukan
+ *                 value:
+ *                   message: "Seat 1 atau carriage tidak ditemukan."
+ *               unknown_class:
+ *                 summary: Kelas tidak dikenali
+ *                 value:
+ *                   message: "Kelas VIP tidak dikenali."
  *       401:
  *         description: Tidak diotorisasi
  *       500:
@@ -382,7 +465,17 @@ router.post("/", authenticate, authorizeRole("user"), bookingController.createBo
  * /api/bookings/{id}/cancel:
  *   delete:
  *     summary: Batalkan booking tiket kereta
- *     description: Membatalkan booking yang sudah ada. Pembatalan hanya diperbolehkan minimal 2 jam sebelum waktu keberangkatan.
+ *     description: |
+ *       Membatalkan booking yang sudah ada. Pembatalan hanya diperbolehkan minimal 2 jam sebelum waktu keberangkatan.
+ *       
+ *       Sistem akan:
+ *       - Validasi bahwa booking dimiliki oleh user yang sedang login
+ *       - Mengecek status booking (tidak bisa membatalkan booking yang sudah cancelled)
+ *       - Menghitung waktu keberangkatan berdasarkan schedule_date dan departure_time
+ *       - Memastikan minimal 2 jam (120 menit) sebelum keberangkatan
+ *       - Mengubah status booking menjadi "cancelled"
+ *       
+ *       Semua operasi dilakukan dalam database transaction untuk memastikan konsistensi data.
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
@@ -460,7 +553,16 @@ router.delete("/:id/cancel", authenticate, authorizeRole("user"), bookingControl
  * /api/bookings/mine:
  *   get:
  *     summary: Ambil semua booking milik user yang sedang login
- *     description: Mendapatkan daftar semua booking yang pernah dibuat oleh user yang sedang login, diurutkan berdasarkan tanggal pembuatan terbaru.
+ *     description: |
+ *       Mendapatkan daftar semua booking yang pernah dibuat oleh user yang sedang login, 
+ *       diurutkan berdasarkan tanggal pembuatan terbaru (created_at DESC).
+ *       
+ *       Response mencakup:
+ *       - Detail booking (id, status, harga, tanggal booking)
+ *       - Informasi penumpang (nama, NIK, seat_id)
+ *       - Detail jadwal kereta (tanggal, nama kereta, kode kereta)
+ *       - Informasi stasiun asal dan tujuan
+ *       - Timestamp created_at dan updated_at
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
@@ -481,13 +583,16 @@ router.delete("/:id/cancel", authenticate, authorizeRole("user"), bookingControl
  *                 destination_station_id: 5
  *                 status: "confirmed"
  *                 price: 150000
- *                 booking_date: "2024-12-20T10:30:00Z"
- *                 created_at: "2024-12-20T10:30:00Z"
- *                 updated_at: "2024-12-20T10:30:00Z"
+ *                 booking_date: "2024-12-20T10:30:00.000Z"
+ *                 created_at: "2024-12-20T10:30:00.000Z"
+ *                 updated_at: "2024-12-20T10:30:00.000Z"
  *                 passengers:
  *                   - name: "John Doe"
  *                     nik: "1234567890123456"
  *                     seat_id: 1
+ *                   - name: "Jane Smith"
+ *                     nik: "6543210987654321"
+ *                     seat_id: 2
  *                 TrainSchedule:
  *                   schedule_date: "2024-12-25"
  *                   Train:
@@ -504,9 +609,9 @@ router.delete("/:id/cancel", authenticate, authorizeRole("user"), bookingControl
  *                 destination_station_id: 4
  *                 status: "cancelled"
  *                 price: 75000
- *                 booking_date: "2024-12-19T15:45:00Z"
- *                 created_at: "2024-12-19T15:45:00Z"
- *                 updated_at: "2024-12-19T16:00:00Z"
+ *                 booking_date: "2024-12-19T15:45:00.000Z"
+ *                 created_at: "2024-12-19T15:45:00.000Z"
+ *                 updated_at: "2024-12-19T16:00:00.000Z"
  *                 passengers:
  *                   - name: "Jane Smith"
  *                     nik: "6543210987654321"
