@@ -129,7 +129,7 @@ const LoginForm = () => {
               <a href="/register" className="auth-link"> Daftar di sini</a>
             </p>
             <p className="auth-footer-text">
-              <a href="/" className="auth-link">← Kembali ke Beranda</a>
+              <a href="/landing" className="auth-link">← Kembali ke Beranda</a>
             </p>
           </form>
         </div>
