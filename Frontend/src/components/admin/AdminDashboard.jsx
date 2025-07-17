@@ -1,6 +1,7 @@
 import AdminStats from '../../components/admin/AdminStats';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/admin/AdminDashboard.css';
 
 
 const AdminDashboard = () => {
