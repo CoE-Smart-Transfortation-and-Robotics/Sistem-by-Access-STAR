@@ -150,7 +150,6 @@ body {
 .brand-text {
     background: linear-gradient(to right, var(--white), var(--gray-100));
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
@@ -584,12 +583,13 @@ body {
     color: var(--white);
 }
 
-.section-header {
+.section-header-landing {
     text-align: center;
     margin-bottom: 64px;
+    justify-content: center;
 }
 
-.section-title {
+.section-title-landing {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 16px;
@@ -641,7 +641,7 @@ body {
 
 @media (min-width: 1024px) {
     .schedule-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
     }
 }
 

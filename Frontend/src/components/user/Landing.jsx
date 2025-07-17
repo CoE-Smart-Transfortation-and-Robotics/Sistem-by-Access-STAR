@@ -110,7 +110,7 @@ const TrainTracks = () => (
 
 const TrainGraphic = ({ scrollYProgress }) => {
     // FIXED: Train now moves forward (left to right) on scroll down, starting from off-screen.
-    const x = useTransform(scrollYProgress, [0, 0.3], ['-100%', '100%']);
+    const x = useTransform(scrollYProgress, [0, 0.3], ['164%', '-164%']);
    
     return (
         <motion.div
@@ -567,14 +567,14 @@ const ScheduleSection = () => {
 
     return (
         <Section id="schedules" className="schedule-section">
-            <div className="section-header">
+            <div className="section-header-landing">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="section-title">
+                    <h2 className="section-title-landing">
                         <span className="section-title-main">
                             Jadwal
                         </span>
@@ -701,14 +701,14 @@ const MapAndStationsSection = () => {
             <div className="stations-background-overlay"></div>
            
             <div className="stations-content">
-                <div className="section-header">
+                <div className="section-header-landing">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h2 className="section-title">
+                        <h2 className="section-title-landing">
                             <span className="section-title-main">
                                 Jaringan
                             </span>
@@ -732,11 +732,14 @@ const MapAndStationsSection = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.3 }}
                     >
-                        <h3 className="stations-list-title">
-                            <span className="stations-list-title-text">
-                                Stasiun Premium
-                            </span>
-                        </h3>
+                    <h2 className="section-title-landing">
+                        <span className="section-title-main">
+                            Stasiun
+                        </span>
+                        <span className="section-title-accent">
+                            {' '}Premium
+                        </span>
+                    </h2>
                        
                         <div className="stations-grid">
                             {dummyStations.map((station, index) => (
@@ -800,14 +803,14 @@ const ServicesSection = () => {
 
     return (
         <Section id="services" className="services-section">
-            <div className="section-header">
+            <div className="section-header-landing">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="section-title">
+                    <h2 className="section-title-landing">
                         <span className="section-title-main">
                             Layanan
                         </span>
@@ -864,14 +867,14 @@ const ServicesSection = () => {
 const ContactSection = () => {
     return (
         <Section id="contact" className="contact-section">
-            <div className="section-header">
+            <div className="section-header-landing">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="section-title">
+                    <h2 className="section-title-landing">
                         <span className="section-title-main">
                             Hubungi
                         </span>
