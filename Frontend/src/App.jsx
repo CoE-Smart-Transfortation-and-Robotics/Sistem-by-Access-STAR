@@ -6,6 +6,9 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+// Public Pages
+import LandingPage from './pages/LandingPage';
+
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
@@ -49,6 +52,7 @@ function App() {
         <div className="App">
           <Routes>
             {/* Public Routes */}
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
