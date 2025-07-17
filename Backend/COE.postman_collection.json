@@ -1144,6 +1144,92 @@
 			]
 		},
 		{
+			"name": "Booking",
+			"item": [
+				{
+					"name": "Check Available Seats",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"train_id\": 1,\r\n  \"schedule_date\": \"2025-07-14\",\r\n  \"origin_station_id\": 1,\r\n  \"destination_station_id\": 3,\r\n  \"passengers\": [\r\n    {\r\n      \"name\": \"Budi\",\r\n      \"nik\": \"1234567890123456\",\r\n      \"seat_id\": 5\r\n    },\r\n    {\r\n      \"name\": \"Ani\",\r\n      \"nik\": \"9876543210987654\",\r\n      \"seat_id\": 6\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/api/bookings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"category_name\": \"AKAP\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:9000/api/bookings/1/cancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Booking",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "ADMIN",
 			"request": {
 				"method": "GET",
