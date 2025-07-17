@@ -1,6 +1,5 @@
 "use strict";
-const { Train, TrainSchedule, Carriage, Seat, ScheduleRoute, sequelize } = require('../models');
-
+const { Train, TrainSchedule, ScheduleRoute, sequelize } = require('../models');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
@@ -9,15 +8,35 @@ dayjs.extend(timezone);
 
 async function generateScheduleForTomorrow() {
   const t = await sequelize.transaction();
-
   try {
     const jakartaNow = dayjs().tz('Asia/Jakarta');
     const tomorrowDate = jakartaNow.add(1, 'day').format('YYYY-MM-DD');
+    const todayDate = jakartaNow.format('YYYY-MM-DD');
     const timestampNow = jakartaNow.toDate();
 
-    const trains = await Train.findAll();
+    // Cek apakah jadwal untuk tanggal besok sudah ada
+    const existingSchedule = await TrainSchedule.findOne({
+      where: { schedule_date: tomorrowDate },
+      transaction: t,
+    });
+
+    if (existingSchedule) {
+      console.warn(`⚠️ Jadwal untuk tanggal ${tomorrowDate} sudah ada, proses generate dibatalkan.`);
+      await t.rollback();
+      process.exit(0);
+    }
+
+    // Jika tanggal besok sama dengan hari ini (atau lebih kecil), jangan lanjut
+    if (tomorrowDate <= todayDate) {
+      console.warn(`⚠️ Tanggal generate (${tomorrowDate}) harus lebih besar dari tanggal hari ini (${todayDate}), proses dibatalkan.`);
+      await t.rollback();
+      process.exit(0);
+    }
+
+    const trains = await Train.findAll({ transaction: t });
 
     for (const train of trains) {
+      // Buat jadwal baru
       const schedule = await TrainSchedule.create({
         train_id: train.id,
         schedule_date: tomorrowDate,
@@ -25,10 +44,12 @@ async function generateScheduleForTomorrow() {
         updated_at: timestampNow
       }, { transaction: t });
 
+      // Copy rute dari jadwal terbaru
       const latestSchedule = await TrainSchedule.findOne({
         where: { train_id: train.id },
         order: [['schedule_date', 'DESC']],
-        include: [ScheduleRoute]
+        include: [ScheduleRoute],
+        transaction: t,
       });
 
       if (latestSchedule?.ScheduleRoutes?.length) {
@@ -44,34 +65,10 @@ async function generateScheduleForTomorrow() {
           }, { transaction: t });
         }
       }
-
-      const carriages = await Carriage.findAll({
-        where: { train_id: train.id },
-        include: [Seat]
-      });
-
-      for (const carriage of carriages) {
-        const newCarriage = await Carriage.create({
-          train_id: train.id,
-          carriage_number: carriage.carriage_number,
-          class: carriage.class,
-          created_at: timestampNow,
-          updated_at: timestampNow
-        }, { transaction: t });
-
-        for (const seat of carriage.Seats) {
-          await Seat.create({
-            carriage_id: newCarriage.id,
-            seat_number: seat.seat_number,
-            created_at: timestampNow,
-            updated_at: timestampNow
-          }, { transaction: t });
-        }
-      }
     }
 
     await t.commit();
-    console.log('Jadwal kereta, rute, gerbong, dan kursi untuk besok berhasil dibuat (Asia/Jakarta).');
+    console.log(`✅ Jadwal dan rute untuk tanggal ${tomorrowDate} berhasil dibuat.`);
     process.exit(0);
   } catch (err) {
     await t.rollback();
