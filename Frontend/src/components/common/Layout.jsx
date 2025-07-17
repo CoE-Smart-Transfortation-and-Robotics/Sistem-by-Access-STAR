@@ -61,13 +61,26 @@ const Layout = ({ children }) => {
     logout();
   };
 
+  const handleBrandClick = () => {
+    if (user) {
+      const dashboardPath = user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+      setActiveMenu('Dashboard');
+      handleNavigation(dashboardPath);
+    }
+  };
+
   return (
     <div className="app-layout">
       <header className="app-header">
         <div className="header-container">
           {/* Bagian Kiri: Logo dan Nama Perusahaan */}
+          
           <div className="header-brand">
-            <div className="brand-logo">
+            <div 
+              className="brand-logo clickable-brand" 
+              onClick={handleBrandClick}
+              style={{ cursor: 'pointer' }}
+            >
               <img 
                 src={logoStar}
                 alt="STAR System Logo" 

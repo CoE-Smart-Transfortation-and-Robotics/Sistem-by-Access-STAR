@@ -1577,6 +1577,8 @@
 
 .station-header {
     margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .station-name {
