@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/auth/auth.css';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -123,9 +124,12 @@ const LoginForm = () => {
               </div>
             </div>
             
-            <p>
+            <p className="auth-footer-text">
               Belum punya akun? 
-              <a href="/register"> Daftar sekarang</a>
+              <a href="/register" className="auth-link"> Daftar di sini</a>
+            </p>
+            <p className="auth-footer-text">
+              <a href="/landing" className="auth-link">← Kembali ke Beranda</a>
             </p>
           </form>
         </div>

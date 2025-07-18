@@ -6,6 +6,9 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+// Public Pages
+import LandingPage from './pages/LandingPage';
+
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
@@ -29,9 +32,9 @@ const RoleBasedRedirect = () => {
     return <div>Loading...</div>;
   }
   
-  // Kalau belum login, redirect ke login
+  // Kalau belum login, redirect ke landing page
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
   
   // Kalau sudah login, redirect sesuai role
@@ -49,6 +52,7 @@ function App() {
         <div className="App">
           <Routes>
             {/* Public Routes */}
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
