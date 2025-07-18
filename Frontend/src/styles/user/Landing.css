@@ -884,7 +884,7 @@ body {
     }
 }
 
-.station-card {
+.station-card-lading {
     background: rgba(26, 26, 26, 0.4);
     backdrop-filter: blur(4px);
     color: var(--gray-300);
@@ -896,13 +896,13 @@ body {
     cursor: pointer;
 }
 
-.station-card:hover {
+.station-card-lading:hover {
     border-color: rgba(52, 152, 219, 0.4);
     background: rgba(52, 152, 219, 0.1);
     transform: translateY(-2px);
 }
 
-.station-card-content {
+.station-card-lading-content {
     margin-bottom: 8px;
 }
 
@@ -926,7 +926,7 @@ body {
     font-size: 0.875rem;
 }
 
-.station-card:hover .station-name {
+.station-card-lading:hover .station-name {
     color: var(--sapphire-blue);
 }
 
@@ -1384,5 +1384,220 @@ body {
     .stations-grid {
         grid-template-columns: 1fr;
         gap: 12px;
+    }
+}
+
+.stations-section {
+    background-color: var(--charcoal-black);
+    color: white;
+    padding: 4rem 1rem;
+    /* Menambahkan padding agar tidak menempel di tepi */
+}
+
+.stations-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    /* mb-12 */
+}
+
+.stations-title {
+    font-size: 1.875rem;
+    /* text-3xl */
+    font-weight: 700;
+    /* font-bold */
+}
+
+.stations-subtitle {
+    color: var(--gray-300);
+    /* text-gray-300 */
+    margin-top: 0.5rem;
+    /* mt-2 */
+    max-width: 42rem;
+    /* max-w-2xl */
+    margin-left: auto;
+    margin-right: auto;
+    /* mx-auto */
+}
+
+.header-underline {
+    margin-top: 1rem;
+    /* mt-4 */
+    height: 0.25rem;
+    /* h-1 */
+    width: 6rem;
+    /* w-24 */
+    background-color: var(--sapphire-blue);
+    /* bg-sapphire-blue */
+    margin-left: auto;
+    margin-right: auto;
+    /* mx-auto */
+    border-radius: 9999px;
+    /* rounded-full */
+}
+
+.carousel-container {
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 1rem;
+    /* gap-8 */
+    overflow-x: auto;
+    padding: 2rem 0rem 2rem 0rem;
+    /* pb-8 */
+    scroll-snap-type: x mandatory;
+    /* Menyembunyikan scrollbar (scrollbar-hide) */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
+    /* Safari and Chrome */
+}
+
+.station-card-lading {
+    /* Ini adalah pengganti dari "group" di Tailwind */
+    flex-shrink: 0;
+    width: 368px;
+    height: 288px;
+    border-radius: 1rem;
+    /* rounded-2xl */
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    /* shadow-lg */
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    scroll-snap-align: center;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    /* grayscale */
+    transition: all 0.5s ease-in-out;
+    border-radius: 10px;
+}
+
+
+/* Efek saat card di-hover (group-hover) */
+
+.station-card-lading:hover .card-image {
+    filter: grayscale(0%);
+    /* group-hover:grayscale-0 */
+    transform: scale(1.1);
+    /* group-hover:scale-110 */
+}
+
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    /* top, right, bottom, left: 0 */
+    background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent);
+    transition: opacity 0.5s;
+}
+
+.card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 1.5rem;
+    /* p-6 */
+}
+
+.card-title {
+    font-size: 1.5rem;
+    /* text-2xl */
+    font-weight: 700;
+    /* font-bold */
+    color: var(--gray-400);
+    /* text-gray-400 */
+    transition: color 0.3s;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    /* text-sm */
+    margin-top: 0.25rem;
+    /* mt-1 */
+    color: var(--gray-400);
+    /* text-gray-400 */
+    transition: color 0.3s;
+}
+
+
+/* Efek teks saat card di-hover */
+
+.station-card-lading:hover .card-title {
+    color: var(--cyan-accent);
+    /* group-hover:text-cyan-accent */
+}
+
+.station-card-lading:hover .card-description {
+    color: white;
+    /* group-hover:text-white */
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    /* hidden */
+    align-items: center;
+}
+
+.carousel-nav.prev {
+    left: -1rem;
+    /* -left-4 */
+}
+
+.carousel-nav.next {
+    right: -1rem;
+    /* -right-4 */
+}
+
+.nav-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    /* bg-white/10 */
+    padding: 0.5rem;
+    /* p-2 */
+    border-radius: 9999px;
+    /* rounded-full */
+    color: white;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    /* hover:bg-white/20 */
+}
+
+
+/* Media query untuk layar medium ke atas (md:) */
+
+@media (min-width: 768px) {
+    .stations-title {
+        font-size: 2.25rem;
+        /* md:text-4xl */
+    }
+    .carousel-nav {
+        display: flex;
+        /* md:block (flex is better for align-items) */
+    }
+    .carousel-nav.prev {
+        left: -2rem;
+        /* md:-left-8 */
+    }
+    .carousel-nav.next {
+        right: -2rem;
+        /* md:-right-8 */
     }
 }

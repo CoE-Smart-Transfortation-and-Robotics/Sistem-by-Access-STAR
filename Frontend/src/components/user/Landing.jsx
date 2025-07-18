@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { Calendar, MapPin, Search, Train, Clock, ArrowRight, Menu, X, Star, Shield, Award, Users, Zap, Phone } from 'lucide-react';
+import { Calendar, MapPin, Search, Train, Clock, ArrowRight, Menu, X, Star, Shield, Award, Users, Zap, Phone, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './../../styles/user/Landing.css';
 
@@ -44,6 +44,39 @@ const dummyStations = [
     { id: 18, station_name: 'Kutoarjo', station_code: 'KTA' },
     { id: 19, station_name: 'Wates', station_code: 'WT' },
     { id: 20, station_name: 'Klaten', station_code: 'KT' }
+];
+
+const stationsData = [
+    {
+        name: "Jakarta Pusat",
+        description: "Pusat bisnis dan pemerintahan Indonesia",
+        image: "https://images.unsplash.com/photo-1555501900-669eadc67408?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+        name: "Bandung",
+        description: "Kota kembang dengan udara sejuk dan kuliner khas",
+        image: "https://images.unsplash.com/photo-1605540436563-5bca919ae766?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+        name: "Yogyakarta",
+        description: "Kota budaya dengan istana dan candi bersejarah",
+        image: "https://images.unsplash.com/photo-1555992336-03a23c7b20ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+        name: "Surabaya",
+        description: "Kota pahlawan dengan industri dan pelabuhan besar",
+        image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+        name: "Semarang",
+        description: "Kota metropolitan dengan arsitektur kolonial",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af2ac1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+        name: "Malang",
+        description: "Kota apel dengan iklim sejuk dan wisata alam",
+        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    }
 ];
 
 const dummySchedules = [
@@ -725,7 +758,7 @@ const MapAndStationsSection = () => {
                
                 <AnimatedMap />
 
-                <div className="stations-list-section">
+                {/* <div className="stations-list-section">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -767,11 +800,69 @@ const MapAndStationsSection = () => {
                             ))}
                         </div>
                     </motion.div>
-                </div>
+                </div> */}
             </div>
         </Section>
     );
 };
+const StationsCarouselSection = () => {
+    const carouselRef = useRef(null);
+
+    const scroll = (scrollOffset) => {
+        if (carouselRef.current) {
+            carouselRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <section className="stations-section">
+            <div className="stations-header">
+                <h2 className="section-title-landing">
+                    <span className="section-title-main">
+                        Stasiun
+                    </span>
+                    <span className="section-title-accent">
+                        {' '}Terhubung
+                    </span>
+                </h2>
+                <p className="stations-subtitle">Temukan destinasi populer yang dapat Anda kunjungi bersama kami.</p>
+                <div className="header-underline"></div>
+            </div>
+
+            <div className="carousel-container">
+                <div ref={carouselRef} className="carousel-track">
+                    {stationsData.map((station) => (
+                        <div key={station.name} className="station-card-lading">
+                            <img 
+                                src={station.image} 
+                                alt={station.name} 
+                                className="card-image" 
+                            />
+                            <div className="card-overlay"></div>
+                            <div className="card-content">
+                                <h4 className="card-title">{station.name}</h4>
+                                <p className="card-description">{station.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="carousel-nav prev">
+                    <button onClick={() => scroll(-400)} className="nav-button">
+                        <ChevronsLeft />
+                    </button>
+                </div>
+                <div className="carousel-nav next">
+                    <button onClick={() => scroll(400)} className="nav-button">
+                        <ChevronsRight />
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+
 
 const ServicesSection = () => {
     const services = [
@@ -1045,6 +1136,9 @@ const Landing = () => {
 
             {/* Map and Stations Section */}
             <MapAndStationsSection />
+
+            {/* Stations Carousel Section */}
+            <StationsCarouselSection />
 
             {/* Services Section */}
             <ServicesSection />
