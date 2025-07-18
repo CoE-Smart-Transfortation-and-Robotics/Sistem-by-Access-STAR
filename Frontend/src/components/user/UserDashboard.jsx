@@ -141,21 +141,30 @@ const UserDashboard = () => {
       <div className="quick-actions-section">
         <h2>Aksi Cepat</h2>
         <div className="quick-actions-grid">
-          <div className="quick-action-card primary" onClick={() => handleMenuClick('book-ticket')}>
+          <div
+            className="quick-action-card primary"
+            onClick={() => navigate('/booking')}
+          >
             <div className="action-icon">🎫</div>
             <h3>Beli Tiket</h3>
             <p>Mulai perjalanan Anda</p>
             <div className="action-arrow">→</div>
           </div>
           
-          <div className="quick-action-card secondary" onClick={() => handleMenuClick('view-bookings')}>
+          <div
+            className="quick-action-card secondary"
+            onClick={() => navigate('/booking')}
+          >
             <div className="action-icon">📋</div>
             <h3>Tiket Saya</h3>
             <p>Kelola pemesanan</p>
             <div className="action-arrow">→</div>
           </div>
           
-          <div className="quick-action-card tertiary" onClick={() => handleMenuClick('cancel-booking')}>
+          <div
+            className="quick-action-card tertiary"
+            onClick={() => navigate('/booking')}
+          >
             <div className="action-icon">💳</div>
             <h3>Pembatalan</h3>
             <p>Batalkan tiket</p>

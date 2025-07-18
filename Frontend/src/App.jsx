@@ -14,13 +14,12 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import TrainManagementPage from './pages/admin/TrainManagementPage';
 import RouteManagementPage from './pages/admin/RouteManagementPage';
-
-
 import TrainSchedulePage from './pages/admin/TrainSchedulePage';
 
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
+import BookingPage from './components/user/Booking';
 
 import './App.css';
 
@@ -56,6 +55,15 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
+            {/* Admin Routes */}
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/users" 
               element={
@@ -80,24 +88,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
-            <Route 
-              path="/user/profile" 
-              element={
-                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboardPage />
-                </ProtectedRoute>
-              } 
-            />
             <Route 
               path="/admin/schedules" 
               element={
@@ -107,14 +97,7 @@ function App() {
               } 
             />
 
-            {/* Default Route with Role-based Redirect */}
-            {/* ✅ Hapus ProtectedRoute wrapper */}
-            <Route 
-              path="/" 
-              element={<RoleBasedRedirect />}
-            />
-
-            {/* User Dashboard */}
+            {/* User Routes */}
             <Route 
               path="/user/dashboard" 
               element={
@@ -122,6 +105,28 @@ function App() {
                   <UserDashboardPage />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/user/profile" 
+              element={
+                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user/Booking" 
+              element={
+                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
+                  <BookingPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Default Route with Role-based Redirect */}
+            <Route 
+              path="/" 
+              element={<RoleBasedRedirect />}
             />
           </Routes>
         </div>
