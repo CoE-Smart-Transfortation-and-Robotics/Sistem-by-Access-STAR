@@ -1,8 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { Calendar, MapPin, Search, Train, Clock, ArrowRight, Menu, X, Star, Shield, Award, Users, Zap, Phone } from 'lucide-react';
+import { Calendar, MapPin, Search, Train, Clock, ArrowRight, Menu, X, Star, Shield, Award, Users, Zap, Phone, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './../../styles/user/Landing.css';
+
+import jakartaImage from '../../assets/jakarta.jpg';
+import bandungImage from '../../assets/bandung.webp';
+import yogyakartaImage from '../../assets/yogyakarta.jpg';
+import surabayaImage from '../../assets/surabaya.jpg';
+import semarangImage from '../../assets/semarang.webp';
+import malangImage from '../../assets/malang.jpg';
+import logoStar from '../../assets/logo-star.png';
+
+
 
 // Helper Components
 const Section = ({ children, className = '' }) => {
@@ -44,6 +54,39 @@ const dummyStations = [
     { id: 18, station_name: 'Kutoarjo', station_code: 'KTA' },
     { id: 19, station_name: 'Wates', station_code: 'WT' },
     { id: 20, station_name: 'Klaten', station_code: 'KT' }
+];
+
+const stationsData = [
+    {
+        name: "Jakarta Pusat",
+        description: "Pusat bisnis dan pemerintahan Indonesia",
+        image: jakartaImage
+    },
+    {
+        name: "Bandung",
+        description: "Kota kembang dengan udara sejuk dan kuliner khas",
+        image: bandungImage
+    },
+    {
+        name: "Yogyakarta",
+        description: "Kota budaya dengan istana dan candi bersejarah",
+        image: yogyakartaImage
+    },
+    {
+        name: "Surabaya",
+        description: "Kota pahlawan dengan industri dan pelabuhan besar",
+        image: surabayaImage
+    },
+    {
+        name: "Semarang",
+        description: "Kota metropolitan dengan arsitektur kolonial",
+        image: semarangImage
+    },
+    {
+        name: "Malang",
+        description: "Kota apel dengan iklim sejuk dan wisata alam",
+        image: malangImage
+    }
 ];
 
 const dummySchedules = [
@@ -198,7 +241,7 @@ const AnimatedMap = () => {
         target: ref,
         offset: ["start end", "end start"]
     });
-    const pathLength = useTransform(scrollYProgress, [0.1, 0.9], [0, 1]);
+    const pathLength = useTransform(scrollYProgress, [0.1, 0.9], [0, 1.96]);
 
     useEffect(() => {
         const unsubscribe = pathLength.on("change", (latestPathLength) => {
@@ -244,16 +287,13 @@ const AnimatedMap = () => {
                     </filter>
                 </defs>
                 {/* Java Island SVG Background */}
-                <path
-                    d="M33.2,214.9c-2.1,0.5-4.2,1-6.2,1.6c-2,0.6-4,1.2-6,1.9c-2,0.7-3.9,1.4-5.9,2.2c-2,0.8-3.9,1.7-5.8,2.6 c-1.9,0.9-3.7,1.9-5.5,2.9c-1.8,1-3.5,2.1-5.1,3.2c-1.6,1.1-3.2,2.3-4.6,3.5c-1.4,1.2-2.8,2.5-4,3.8c-1.2,1.3-2.4,2.6-3.4,4 c-1,1.4-1.9,2.8-2.7,4.2c-0.8,1.4-1.5,2.8-2.1,4.2c-0.6,1.4-1.1,2.8-1.5,4.2c-0.4,1.4-0.7,2.8-0.9,4.2c-0.2,1.4-0.3,2.8-0.3,4.2 c0,1.4,0.1,2.8,0.3,4.2c0.2,1.4,0.5,2.8,0.9,4.2c0.4,1.4,0.9,2.8,1.5,4.2c0.6,1.4,1.3,2.8,2.1,4.2c0.8,1.4,1.7,2.8,2.7,4.2 c1,1.4,2.1,2.7,3.4,4c1.2,1.3,2.6,2.6,4,3.8c1.4,1.2,2.9,2.4,4.6,3.5c1.6,1.1,3.4,2.2,5.1,3.2c1.8,1,3.7,2,5.5,2.9 c1.9,0.9,3.8,1.8,5.8,2.6c2,0.8,3.9,1.5,5.9,2.2c2,0.7,4,1.3,6,1.9c2.1,0.6,4.1,1.1,6.2,1.6l811.6,0c2.1-0.5,4.2-1,6.2-1.6 c2-0.6,4-1.2,6-1.9c2-0.7,3.9-1.4,5.9-2.2c2-0.8,3.9-1.7,5.8-2.6c1.9-0.9,3.7-1.9,5.5-2.9c1.8-1,3.5-2.1,5.1-3.2 c1.6-1.1,3.2-2.3,4.6-3.5c1.4-1.2,2.8-2.5,4-3.8c1.2-1.3,2.4-2.6,3.4-4c1-1.4,1.9-2.8,2.7-4.2c0.8-1.4,1.5-2.8,2.1-4.2 c0.6-1.4,1.1-2.8,1.5-4.2c0.4-1.4,0.7-2.8,0.9,4.2c0.2-1.4,0.3-2.8,0.3-4.2c0-1.4-0.1-2.8-0.3-4.2c-0.2-1.4-0.5-2.8-0.9-4.2 c-0.4-1.4-0.9-2.8-1.5-4.2c-0.6-1.4-1.3-2.8-2.1-4.2c-0.8-1.4-1.7-2.8-2.7-4.2c-1-1.4-2.1-2.7-3.4-4 c-1.2-1.3-2.6-2.6-4-3.8c-1.4-1.2-2.9-2.4-4.6-3.5c-1.6-1.1-3.4-2.2-5.1-3.2c-1.8-1-3.7-2-5.5-2.9 c-1.9-0.9-3.8-1.8-5.8-2.6c-2-0.8-3.9-1.5-5.9-2.2c-2-0.7-4-1.3-6-1.9c-2.1-0.6-4.1-1.1-6.2-1.6L33.2,214.9z"
-                    fill="#0a192f" stroke="#172a45" strokeWidth="2"
-                />
+
 
                 {/* Animated Route */}
                 <motion.path
                     ref={pathRef}
                     d={routePath}
-                    stroke="rgba(230, 126, 34, 0.5)"
+                    stroke="rgba(245, 123, 17, 0.79)"
                     strokeWidth="4"
                     fill="none"
                     style={{ pathLength }}
@@ -326,11 +366,17 @@ const Header = () => {
                     className="brand-logo"
                     onClick={() => navigate('/landing')}
                 >
-                    <div className="icon-container">
-                        <Train size={24} />
-                    </div>
-                    <span className="brand-text">
-                        STAR<span className="brand-text-accent">RAIL</span>
+                    <img 
+                        src={logoStar}
+                        alt="STAR System Logo" 
+                        className="logo-image"
+                        onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                        }}
+                    />
+                    <span className="brand-text-lading">
+                        STAR <span className="brand-text-accent-lading">System</span>
                     </span>
                 </div>
 
@@ -704,9 +750,9 @@ const MapAndStationsSection = () => {
                 <div className="section-header-landing">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        whileInView={{ opacity: 82, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.2, delay: 0.3 }}
                     >
                         <h2 className="section-title-landing">
                             <span className="section-title-main">
@@ -719,13 +765,13 @@ const MapAndStationsSection = () => {
                         <p className="section-description">
                             Jelajahi rute kereta api premium yang menghubungkan kota-kota besar di seluruh Indonesia dengan standar layanan internasional
                         </p>
-                        <div className="section-divider"></div>
+
                     </motion.div>
                 </div>
                
                 <AnimatedMap />
 
-                <div className="stations-list-section">
+                {/* <div className="stations-list-section">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -767,11 +813,69 @@ const MapAndStationsSection = () => {
                             ))}
                         </div>
                     </motion.div>
-                </div>
+                </div> */}
             </div>
         </Section>
     );
 };
+const StationsCarouselSection = () => {
+    const carouselRef = useRef(null);
+
+    const scroll = (scrollOffset) => {
+        if (carouselRef.current) {
+            carouselRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <section className="stations-section">
+            <div className="stations-header">
+                <h2 className="section-title-landing">
+                    <span className="section-title-main">
+                        Stasiun
+                    </span>
+                    <span className="section-title-accent">
+                        {' '}Terhubung
+                    </span>
+                </h2>
+                <p className="stations-subtitle">Temukan destinasi populer yang dapat Anda kunjungi bersama kami.</p>
+                <div className="header-underline"></div>
+            </div>
+
+            <div className="carousel-container">
+                <div ref={carouselRef} className="carousel-track">
+                    {stationsData.map((station) => (
+                        <div key={station.name} className="station-card-lading">
+                            <img 
+                                src={station.image} 
+                                alt={station.name} 
+                                className="card-image" 
+                            />
+                            <div className="card-overlay"></div>
+                            <div className="card-content">
+                                <h4 className="card-title">{station.name}</h4>
+                                <p className="card-description">{station.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="carousel-nav prev">
+                    <button onClick={() => scroll(-400)} className="nav-button">
+                        <ChevronsLeft />
+                    </button>
+                </div>
+                <div className="carousel-nav next">
+                    <button onClick={() => scroll(400)} className="nav-button">
+                        <ChevronsRight />
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+
 
 const ServicesSection = () => {
     const services = [
@@ -925,11 +1029,11 @@ const Footer = () => {
         <footer className="footer-main">
             <div className="footer-container">
                 <div className="footer-content">
-                    {/* Brand Section */}
+                    {/* Brand & Description Section */}
                     <div className="footer-brand-section">
                         <div className="footer-brand">
                             <div className="footer-brand-icon">
-                                <Train size={24} />
+                                <Train size={28} />
                             </div>
                             <div className="footer-brand-text">
                                 <h3 className="footer-brand-title">
@@ -947,6 +1051,7 @@ const Footer = () => {
                                 className="footer-social-btn"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                title="WhatsApp"
                             >
                                 📱
                             </motion.button>
@@ -954,6 +1059,7 @@ const Footer = () => {
                                 className="footer-social-btn"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                title="Twitter"
                             >
                                 🐦
                             </motion.button>
@@ -961,6 +1067,7 @@ const Footer = () => {
                                 className="footer-social-btn"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                title="Facebook"
                             >
                                 📘
                             </motion.button>
@@ -968,47 +1075,105 @@ const Footer = () => {
                                 className="footer-social-btn"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                title="Instagram"
                             >
                                 📷
                             </motion.button>
                         </div>
                     </div>
 
-                    {/* Quick Links */}
+                    {/* Services Links */}
                     <div className="footer-links-section">
-                        <h4 className="footer-section-title">Layanan</h4>
+                        <h4 className="footer-section-title">Layanan Kami</h4>
                         <ul className="footer-links">
                             <li><a href="#schedules" className="footer-link">Jadwal Kereta</a></li>
-                            <li><a href="#stations" className="footer-link">Stasiun</a></li>
+                            <li><a href="#stations" className="footer-link">Stasiun Terhubung</a></li>
                             <li><a href="#services" className="footer-link">Layanan Premium</a></li>
                             <li><a href="#" className="footer-link">Booking Online</a></li>
-                            <li><a href="#" className="footer-link">Railfood</a></li>
+                            <li><a href="#" className="footer-link">Executive Lounge</a></li>
+                            <li><a href="#" className="footer-link">Railfood Service</a></li>
                         </ul>
                     </div>
 
-                    {/* Support */}
+                    {/* Support Links */}
                     <div className="footer-links-section">
-                        <h4 className="footer-section-title">Dukungan</h4>
+                        <h4 className="footer-section-title">Bantuan & Info</h4>
                         <ul className="footer-links">
                             <li><a href="#contact" className="footer-link">Hubungi Kami</a></li>
                             <li><a href="#" className="footer-link">FAQ</a></li>
                             <li><a href="#" className="footer-link">Pusat Bantuan</a></li>
+                            <li><a href="#" className="footer-link">Panduan Booking</a></li>
                             <li><a href="#" className="footer-link">Kebijakan Privasi</a></li>
                             <li><a href="#" className="footer-link">Syarat & Ketentuan</a></li>
                         </ul>
                     </div>
+
+                    {/* Location & Contact Info */}
+                    <div className="footer-contact-section">
+                        <h4 className="footer-section-title">Lokasi Kantor</h4>
+                        <div className="footer-contact-info">
+                            <div className="footer-contact-item">
+                                <MapPin size={16} />
+                                <div className="footer-contact-details">
+                                    <p className="footer-contact-title">Head Office</p>
+                                    <p className="footer-contact-desc">Fakultas Teknik Elektro<br/>Telkom University, Bandung</p>
+                                </div>
+                            </div>
+                            <div className="footer-contact-item">
+                                <Phone size={16} />
+                                <div className="footer-contact-details">
+                                    <p className="footer-contact-title">Customer Service</p>
+                                    <p className="footer-contact-desc">0804-1-567-890</p>
+                                </div>
+                            </div>
+                            <div className="footer-contact-item">
+                                <Clock size={16} />
+                                <div className="footer-contact-details">
+                                    <p className="footer-contact-title">Jam Operasional</p>
+                                    <p className="footer-contact-desc">24 Hours</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                    <div className="footer-map-section">
+                    <h4 className="footer-section-title">Temukan Kami</h4>
+                    <div className="footer-map-container">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.285862140117!2d107.62472658511314!3d-6.975560650304786!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e9af0369adf3%3A0x122e47e3c362e2b4!2sFakultas%20Teknik%20Elektro%20-%20Telkom%20University!5e0!3m2!1sid!2sid!4v1752824431940!5m2!1sid!2sid" 
+                            width="500" 
+                            height="300" 
+                            style={{border: 0, borderRadius: '12px'}} 
+                            allowFullScreen="" 
+                            loading="lazy" 
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title="Lokasi StarRail Office - Telkom University"
+                        ></iframe>
+                    </div>
                 </div>
+                </div>
+
+                {/* Google Maps Section */}
+
 
                 {/* Bottom Bar */}
                 <div className="footer-bottom">
                     <div className="footer-bottom-content">
-                        <p className="footer-copyright">
-                            © 2025 StarRail Executive. All rights reserved.
-                        </p>
-                        <div className="footer-meta">
-                            <span>Made with ❤️ in Indonesia</span>
-                            <span>•</span>
-                            <span>Version 1.0.0</span>
+                        <div className="footer-bottom-left">
+                            <p className="footer-copyright">
+                                © 2025 StarRail Executive. All rights reserved.
+                            </p>
+                            <p className="footer-developed">
+                                Developed by <strong>COE Smart Transportation & Robotics</strong>
+                            </p>
+                        </div>
+                        <div className="footer-bottom-right">
+                            <div className="footer-meta">
+                                <span>Made with ❤️ in Indonesia</span>
+                                <span>•</span>
+                                <span>Version 1.0.0</span>
+                                <span>•</span>
+                                <span>Telkom University</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1045,6 +1210,9 @@ const Landing = () => {
 
             {/* Map and Stations Section */}
             <MapAndStationsSection />
+
+            {/* Stations Carousel Section */}
+            <StationsCarouselSection />
 
             {/* Services Section */}
             <ServicesSection />
