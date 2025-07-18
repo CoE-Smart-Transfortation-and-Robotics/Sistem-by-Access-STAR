@@ -147,13 +147,13 @@ body {
     color: var(--white);
 }
 
-.brand-text {
+.brand-text-lading {
     background: linear-gradient(to right, var(--white), var(--gray-100));
     -webkit-background-clip: text;
     background-clip: text;
 }
 
-.brand-text-accent {
+.brand-text-accent-lading {
     background: linear-gradient(to right, var(--sapphire-blue), var(--blue-400));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1390,8 +1390,7 @@ body {
 .stations-section {
     background-color: var(--charcoal-black);
     color: white;
-    padding: 4rem 1rem;
-    /* Menambahkan padding agar tidak menempel di tepi */
+    padding: 4rem;
 }
 
 .stations-header {
@@ -1600,4 +1599,11 @@ body {
         right: -2rem;
         /* md:-right-8 */
     }
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
 }
