@@ -187,9 +187,12 @@ const RegisterForm = () => {
               {loading ? 'Sedang Mendaftar...' : 'Daftar Sekarang'}
             </button>
             
-            <p>
+            <p className="auth-footer-text">
               Sudah punya akun? 
-              <a href="/login"> Masuk di sini</a>
+              <a href="/login" className="auth-link"> Masuk di sini</a>
+            </p>
+            <p className="auth-footer-text">
+              <a href="/landing" className="auth-link">← Kembali ke Beranda</a>
             </p>
           </form>
         </div>

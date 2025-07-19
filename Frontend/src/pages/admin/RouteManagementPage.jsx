@@ -1,17 +1,15 @@
-import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/common/Layout';
-import AdminDashboard from '../../components/admin/AdminDashboard';
+import RouteManagement from '../../components/admin/RouteManagement';
 import ProtectedRoute from '../../components/common/ProtectedRoute';
 
-
-const AdminDashboardPage = () => {
+const RouteManagementPage = () => {
   return (
     <ProtectedRoute>
       <Layout>
-          <AdminDashboard />
+        <RouteManagement />
       </Layout>
     </ProtectedRoute>
   );
 };
 
-export default AdminDashboardPage;
+export default RouteManagementPage;
