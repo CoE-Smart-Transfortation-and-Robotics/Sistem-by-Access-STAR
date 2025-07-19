@@ -1,6 +1,7 @@
 import AdminStats from '../../components/admin/AdminStats';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/admin/AdminDashboard.css';
 
 
 const AdminDashboard = () => {
@@ -147,7 +148,7 @@ const AdminDashboard = () => {
         console.log('Schedule Management - Coming Soon');
         break;
       case 'route-planning':
-        console.log('Route Planning - Coming Soon');
+        navigate('/admin/route-planning');
         break;
       case 'booking-system':
         console.log('Booking System - Coming Soon');

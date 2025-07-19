@@ -34,7 +34,8 @@ npm install
 
 # Install dependencies tambahan yang diperlukan
 npm install react-router-dom
-```
+npm install framer-motion
+npm install lucide-react
 
 ## ⚙️ Konfigurasi
 
