@@ -467,66 +467,77 @@ module.exports = {
         origin_station_id,
         destination_station_id,
         schedule_date,
+        train_category
       } = req.query;
 
-      if (!origin_station_id || !destination_station_id || !schedule_date) {
+      if (!origin_station_id || !destination_station_id || !schedule_date || !train_category) {
         return res.status(400).json({
-          message: "origin_station_id, destination_station_id, dan schedule_date wajib diisi.",
+          message: "origin_station_id, destination_station_id, schedule_date, dan train_category wajib diisi.",
         });
       }
 
+      const classPrice = {
+        Ekonomi: 25000,
+        Bisnis: 40000,
+        Eksekutif: 60000,
+      };
+
       const schedules = await sequelize.query(
-      `
-      SELECT 
-        ts.id AS schedule_id,
-        t.id AS train_id,
-        t.train_name,
-        t.train_code,
-        tc.category_name,
-        ts.schedule_date,
-        origin_route.departure_time AS origin_departure_time,
-        dest_route.arrival_time AS destination_arrival_time,
-        origin_station.station_name AS origin_station_name,
-        dest_station.station_name AS destination_station_name,
-        (dest_route.station_order - origin_route.station_order) AS route_distance,
-        GROUP_CONCAT(
-          DISTINCT CONCAT(c.class, ':', 
-            (SELECT COUNT(*) FROM seats s WHERE s.carriage_id = c.id)
-          ) SEPARATOR ','
-        ) AS available_classes
-      FROM train_schedules ts
-      JOIN trains t ON ts.train_id = t.id
-      LEFT JOIN train_categories tc ON t.category_id = tc.id
-      JOIN schedule_routes origin_route ON ts.id = origin_route.schedule_id 
-        AND origin_route.station_id = :origin_station_id
-      JOIN schedule_routes dest_route ON ts.id = dest_route.schedule_id 
-        AND dest_route.station_id = :destination_station_id
-      JOIN stations origin_station ON origin_route.station_id = origin_station.id
-      JOIN stations dest_station ON dest_route.station_id = dest_station.id
-      JOIN carriages c ON t.id = c.train_id
-      WHERE ts.schedule_date = :schedule_date
-        AND origin_route.station_order < dest_route.station_order
-        AND origin_route.departure_time IS NOT NULL
-      GROUP BY 
-        ts.id, 
-        t.id, 
-        t.train_name,
-        t.train_code,
-        tc.category_name,
-        ts.schedule_date,
-        origin_route.departure_time, 
-        dest_route.arrival_time,
-        origin_station.station_name,
-        dest_station.station_name,
-        dest_route.station_order,
-        origin_route.station_order
-      ORDER BY origin_route.departure_time ASC
-      `,
+        `
+        SELECT 
+          ts.id AS schedule_id,
+          t.id AS train_id,
+          t.train_name,
+          t.train_code,
+          tc.category_name,
+          tc.id AS category_id,
+          ts.schedule_date,
+          origin_route.departure_time AS origin_departure_time,
+          dest_route.arrival_time AS destination_arrival_time,
+          origin_station.station_name AS origin_station_name,
+          dest_station.station_name AS destination_station_name,
+          (dest_route.station_order - origin_route.station_order) AS route_distance,
+          GROUP_CONCAT(
+            DISTINCT CONCAT(c.class, ':', 
+              (SELECT COUNT(*) FROM seats s WHERE s.carriage_id = c.id)
+            ) SEPARATOR ','
+          ) AS available_classes
+        FROM train_schedules ts
+        JOIN trains t ON ts.train_id = t.id
+        LEFT JOIN train_categories tc ON t.category_id = tc.id
+        JOIN schedule_routes origin_route ON ts.id = origin_route.schedule_id 
+          AND origin_route.station_id = :origin_station_id
+        JOIN schedule_routes dest_route ON ts.id = dest_route.schedule_id 
+          AND dest_route.station_id = :destination_station_id
+        JOIN stations origin_station ON origin_route.station_id = origin_station.id
+        JOIN stations dest_station ON dest_route.station_id = dest_station.id
+        JOIN carriages c ON t.id = c.train_id
+        WHERE ts.schedule_date = :schedule_date
+          AND tc.id = :train_category
+          AND origin_route.station_order < dest_route.station_order
+          AND origin_route.departure_time IS NOT NULL
+        GROUP BY 
+          ts.id, 
+          t.id, 
+          t.train_name,
+          t.train_code,
+          tc.category_name,
+          tc.id,
+          ts.schedule_date,
+          origin_route.departure_time, 
+          dest_route.arrival_time,
+          origin_station.station_name,
+          dest_station.station_name,
+          dest_route.station_order,
+          origin_route.station_order
+        ORDER BY origin_route.departure_time ASC
+        `,
         {
           replacements: {
             origin_station_id,
             destination_station_id,
             schedule_date,
+            train_category
           },
           type: sequelize.QueryTypes.SELECT,
         }
@@ -538,13 +549,19 @@ module.exports = {
         });
       }
 
-      // Format hasil untuk response yang lebih clean
       const formattedSchedules = schedules.map(schedule => {
         const classes = {};
+        const pricing = {};
+        const distance = schedule.route_distance;
+
         if (schedule.available_classes) {
           schedule.available_classes.split(',').forEach(classInfo => {
             const [className, seatCount] = classInfo.split(':');
+            const price = classPrice[className] ? classPrice[className] * distance : null;
             classes[className] = parseInt(seatCount);
+            if (price !== null) {
+              pricing[className] = price;
+            }
           });
         }
 
@@ -567,6 +584,7 @@ module.exports = {
             arrival_time: schedule.destination_arrival_time,
           },
           seat_classes: classes,
+          pricing,
         };
       });
 
