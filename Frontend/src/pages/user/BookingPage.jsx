@@ -1,8 +1,8 @@
 import React from 'react';
-import BookingPage from '../../components/user/Booking';
+import BookingComponent from '../../components/user/Booking'; // ✅ Ganti nama
 
-const BookingPageWrapper = () => {
-  return <BookingPage />;
+const BookingPage = () => {
+  return <BookingComponent />; // ✅ Pakai nama baru
 };
 
-export default BookingPageWrapper;
+export default BookingPage;
