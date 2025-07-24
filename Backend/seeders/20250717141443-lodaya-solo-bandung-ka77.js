@@ -6,22 +6,23 @@ module.exports = {
     try {
       const now = new Date();
 
-      // 1. Tambah KA Lodaya pagi Solo→Bandung (KA 77)
+      // 1. Tambah KA Lodaya KA 77
       await queryInterface.bulkInsert('trains', [{
-        train_name : 'Lodaya (Solo–Bandung KA 77)',
-        train_code : 'LDY77',
+        train_name : 'Lodaya',
+        train_code : '77',
         category_id: 1,
         created_at : now,
         updated_at : now
       }], { transaction: t });
 
       const [[{ id: trainId }]] = await queryInterface.sequelize.query(
-        "SELECT id FROM trains WHERE train_name = 'Lodaya (Solo–Bandung KA 77)' LIMIT 1",
+        "SELECT id FROM trains WHERE train_name = 'Lodaya' AND train_code = '77' LIMIT 1",
         { transaction: t }
       );
 
-      // 2. Tambah gerbong (Ekonomi, Bisnis, Eksekutif)
-      const carriagesData = ['Ekonomi','Bisnis','Eksekutif'].map((cl, idx) => ({
+      // 2. Tambah gerbong Ekonomi & Eksekutif
+      const classList = ['Ekonomi', 'Eksekutif'];
+      const carriagesData = classList.map((cl, idx) => ({
         train_id: trainId,
         carriage_number: idx + 1,
         class: cl,
@@ -31,30 +32,39 @@ module.exports = {
       await queryInterface.bulkInsert('carriages', carriagesData, { transaction: t });
 
       const [carriages] = await queryInterface.sequelize.query(
-        `SELECT id, carriage_number FROM carriages WHERE train_id = ${trainId} ORDER BY carriage_number`,
+        `SELECT id, class FROM carriages WHERE train_id = ${trainId} ORDER BY carriage_number`,
         { transaction: t }
       );
 
-      // 3. Buat kursi 1A‑5D tiap gerbong
+      // 3. Buat kursi
       const seatsData = [];
-      for (const c of carriages) {
-        for (let row = 1; row <= 5; row++) {
-          for (const l of ['A','B','C','D']) {
+      for (const carriage of carriages) {
+        const isEkonomi = carriage.class === 'Ekonomi';
+        const totalRows = isEkonomi ? 18 : 13;
+
+        for (let row = 1; row <= totalRows; row++) {
+          for (const seatLetter of ['A', 'B', 'C', 'D']) {
+            const seatNumber = `${row}${seatLetter}`;
+
+            // Hapus 1D dan 13A di Eksekutif
+            if (!isEkonomi && (seatNumber === '1D' || seatNumber === '13A')) continue;
+
             seatsData.push({
-              carriage_id : c.id,
-              seat_number : `${row}${l}`,
-              created_at  : now,
-              updated_at  : now
+              carriage_id: carriage.id,
+              seat_number: seatNumber,
+              created_at: now,
+              updated_at: now
             });
           }
         }
       }
       await queryInterface.bulkInsert('seats', seatsData, { transaction: t });
 
-      // 4. Jadwal besok
+      // 4. Tambah jadwal besok
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const scheduleDate = tomorrow.toISOString().slice(0,10);
+      const scheduleDate = tomorrow.toISOString().slice(0, 10);
+
       await queryInterface.bulkInsert('train_schedules', [{
         train_id: trainId,
         schedule_date: scheduleDate,
@@ -67,12 +77,7 @@ module.exports = {
         { transaction: t }
       );
 
-      // 5. Rute & waktu (pagi KA 77 Solo → Bandung)
-      const stationCodes = ['SLO','KAC','YK','WT','KTA','KM','GB','KYA','KM?','CPD?']; 
-      // jangan lupa ubah sesuai data berikut:
-      const stationCodesAccurate = [
-        'SLO','KLT','YK','WT','KT','KB','GB','RY','KR','MS','SDR','BJR','CI','TSM','CPD','KAC','BD'
-      ];
+      // 5. Rute Lodaya Solo → Bandung
       const timeMap = {
         SLO : { arr: null, dep: '07:20' },
         KLT : { arr: '07:42', dep: '07:44' },
@@ -112,10 +117,11 @@ module.exports = {
           updated_at: now
         };
       });
+
       await queryInterface.bulkInsert('schedule_routes', routesData, { transaction: t });
 
       await t.commit();
-    } catch(err) {
+    } catch (err) {
       await t.rollback();
       throw err;
     }
@@ -127,30 +133,30 @@ module.exports = {
         DELETE sr FROM schedule_routes sr
         JOIN train_schedules ts ON sr.schedule_id = ts.id
         JOIN trains tr ON ts.train_id = tr.id
-        WHERE tr.train_name = 'Lodaya (Solo–Bandung KA 77)'
+        WHERE tr.train_name = 'Lodaya' AND tr.train_code = '77'
       `, { transaction: t });
 
       await queryInterface.sequelize.query(`
         DELETE s FROM train_schedules s
         JOIN trains tr ON s.train_id = tr.id
-        WHERE tr.train_name = 'Lodaya (Solo–Bandung KA 77)'
+        WHERE tr.train_name = 'Lodaya' AND tr.train_code = '77'
       `, { transaction: t });
 
       await queryInterface.sequelize.query(`
         DELETE st FROM seats st
         JOIN carriages ca ON st.carriage_id = ca.id
         JOIN trains tr ON ca.train_id = tr.id
-        WHERE tr.train_name = 'Lodaya (Solo–Bandung KA 77)'
+        WHERE tr.train_name = 'Lodaya' AND tr.train_code = '77'
       `, { transaction: t });
 
       await queryInterface.sequelize.query(`
         DELETE FROM carriages WHERE train_id IN (
-          SELECT id FROM trains WHERE train_name = 'Lodaya (Solo–Bandung KA 77)'
+          SELECT id FROM trains WHERE train_name = 'Lodaya' AND train_code = '77'
         )
       `, { transaction: t });
 
       await queryInterface.sequelize.query(
-        "DELETE FROM trains WHERE train_name = 'Lodaya (Solo–Bandung KA 77)'",
+        "DELETE FROM trains WHERE train_name = 'Lodaya' AND train_code = '77'",
         { transaction: t }
       );
     });
