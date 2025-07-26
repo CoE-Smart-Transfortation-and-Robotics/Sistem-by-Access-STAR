@@ -62,105 +62,128 @@ const BookingPage = () => {
   };
 
   const searchTrains = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const schedules = await apiService.getAllSchedules();
-      const filteredSchedules = schedules.filter(schedule => 
-        schedule.schedule_date === searchForm.travel_date
-      );
-      setAvailableSchedules(filteredSchedules);
-      setCurrentStep(2);
-    } catch (error) {
-      console.error('Error searching trains:', error);
-      alert('Error searching trains. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  e.preventDefault();
+
+  const {
+    travel_date,
+    origin_station,
+    destination_station
+  } = searchForm;
+
+  console.log("📦 Input Form Data:", searchForm);
+
+  // Validasi form
+  if (!travel_date || !origin_station || !destination_station) {
+    alert("Semua field harus diisi sebelum mencari jadwal kereta.");
+    return;
+  }
+
+  const params = {
+    schedule_date: travel_date,
+    origin_station_id: parseInt(origin_station),
+    destination_station_id: parseInt(destination_station),
+    train_category: 1 // Hanya 1 kategori untuk sekarang
   };
 
-  const selectSchedule = async (schedule) => {
-  setSelectedSchedule(schedule);
+  console.log("🚀 Query Params to API:", params);
+
   setLoading(true);
-  
+
   try {
-    console.log('Selected schedule:', schedule);
-    
-    // 1. Ambil semua gerbong dari kereta ini
-    const carriagesResponse = await apiService.getCarriagesByTrainId(schedule.train_id);
-    console.log('Carriages for train:', carriagesResponse);
-    
-    let allSeats = [];
+    const response = await apiService.searchTrainSchedules(params);
 
-    // 2. Ambil semua kursi dari setiap gerbong
-    for (const carriage of carriagesResponse) {
-      const carriageSeats = await apiService.getSeatsByCarriageId(carriage.id);
-      allSeats = [...allSeats, ...carriageSeats];
+    // Validasi isi respons
+    const schedules = response?.data;
+    if (Array.isArray(schedules) && schedules.length > 0) {
+      console.log("✅ Jadwal ditemukan:", schedules);
+      setAvailableSchedules(schedules);
+      setCurrentStep(2);
+    } else {
+      console.warn("⚠️ Tidak ada jadwal ditemukan atau response kosong.");
+      alert("Tidak ada jadwal tersedia untuk rute dan tanggal yang dipilih.");
     }
-
-    console.log('All seats from API:', allSeats);
-
-    // 3. Ambil data kursi yang sudah dibooking
-    const availableSeatsResponse = await axios.get(`http://localhost:9000/api/bookings/available-seats`, {
-      params: {
-        train_id: schedule.train_id,
-        schedule_date: schedule.schedule_date,
-        origin_station_id: schedule.origin_station_id,
-        destination_station_id: schedule.destination_station_id
-      }
-    });
-
-    const scheduleBookings = availableSeatsResponse.data?.data || [];
-
-    console.log('Bookings for this schedule:', scheduleBookings);
-
-    // 4. Dapatkan seat_id yang sudah di-booking
-    const bookedSeatIds = scheduleBookings.map(booking => booking.seat_id);
-    console.log('Booked seat IDs:', bookedSeatIds);
-
-    // 5. Tandai kursi yang sudah di-booking
-    const seatsWithBookingStatus = allSeats.map(seat => ({
-      ...seat,
-      isBooked: bookedSeatIds.includes(seat.seat_id || seat.id)
-    }));
-
-    console.log('Seats with booking status:', seatsWithBookingStatus);
-
-    // 6. Set seat yang bisa ditampilkan
-    setAvailableSeats(seatsWithBookingStatus);
-    setCurrentStep(3);
 
   } catch (error) {
-    console.error('Error fetching real seat data:', error);
-
-    // Hanya jika API error, baru pakai dummy
-    console.warn('API failed, using fallback dummy data');
-
-    const sampleSeats = [];
-    for (let i = 1; i <= 20; i++) {
-      sampleSeats.push({
-        seat_id: i,
-        seat_number: `${Math.ceil(i / 4)}${String.fromCharCode(65 + ((i - 1) % 4))}`,
-        carriage_id: 1,
-        class: 'Economy',
-        isBooked: [2, 5, 8, 12, 15].includes(i)
-      });
-    }
-
-    setAvailableSeats(sampleSeats);
-    setCurrentStep(3);
+    console.error("❌ Gagal mengambil data jadwal:", error);
+    alert(error?.response?.data?.message || "Terjadi kesalahan saat mencari jadwal kereta.");
   } finally {
     setLoading(false);
   }
 };
 
 
+
+  const selectSchedule = async (schedule) => {
+    // 🔍 DEBUG: Log the actual schedule structure
+    console.log('🔍 Full schedule object:', schedule);
+    console.log('🔍 schedule.train_id:', schedule.train_id);
+    console.log('🔍 schedule.train:', schedule.train);
+    console.log('🔍 schedule.timing:', schedule.timing);
+    console.log('🔍 schedule.schedule_date:', schedule.schedule_date);
+    
+    setSelectedSchedule(schedule);
+    setLoading(true);
+    
+    try {
+      console.log('Selected schedule:', schedule);
+
+      // ✅ Fix: Include all required parameters
+      const availableSeatsResponse = await axios.get(`http://localhost:9000/api/bookings/available-seats`, {
+        params: {
+          // 🔧 Try different property access patterns
+          train_id: schedule.train_id || schedule.train?.train_id,
+          schedule_date: schedule.schedule_date || schedule.timing?.schedule_date,
+          origin_station_id: searchForm.origin_station,
+          destination_station_id: searchForm.destination_station
+        }
+      });
+
+      console.log('Available seats response:', availableSeatsResponse.data);
+
+      // Langsung gunakan data dari response karena sudah include is_booked
+      const seatsData = availableSeatsResponse.data || [];
+      
+      // Map data sesuai format yang dibutuhkan frontend
+      const formattedSeats = seatsData.map(seat => ({
+        seat_id: seat.seat_id,
+        seat_number: seat.seat_number,
+        carriage_id: seat.carriage_id,
+        class: seat.class,
+        isBooked: seat.is_booked // Gunakan is_booked dari API response
+      }));
+
+      console.log('Formatted seats with booking status:', formattedSeats);
+
+      setAvailableSeats(formattedSeats);
+      setCurrentStep(3);
+
+    } catch (error) {
+      console.error('Error fetching available seats:', error);
+
+      // Fallback ke sample data jika API gagal
+      const sampleSeats = [];
+      for (let i = 1; i <= 20; i++) {
+        sampleSeats.push({
+          seat_id: i,
+          seat_number: `${Math.ceil(i / 4)}${String.fromCharCode(65 + ((i - 1) % 4))}`,
+          carriage_id: 1,
+          class: 'Economy',
+          isBooked: [2, 5, 8, 12, 15].includes(i)
+        });
+      }
+
+      setAvailableSeats(sampleSeats);
+      setCurrentStep(3);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleSeatSelection = (seat, passengerIndex) => {
     if (seat.isBooked) return;
 
     // Use seat.seat_id instead of seat.id
-    const seatId = seat.seat_id;
+    const seatId = seat.seat_id ?? seat.id;
 
     setPassengers(prev => prev.map((passenger, i) => {
       // Clear seat from ALL passengers first if seat is being selected
@@ -192,38 +215,65 @@ const BookingPage = () => {
   const submitBooking = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
+      // ✅ Debug: Log selectedSchedule structure
+      console.log('🔍 selectedSchedule in submitBooking:', selectedSchedule);
+
+      if (!selectedSchedule) {
+        alert("Schedule belum dipilih dengan benar.");
+        return;
+      }
+
+      // ✅ Fix: Use same property access pattern as selectSchedule
+      const trainId = selectedSchedule.train_id || selectedSchedule.train?.train_id;
+      const scheduleDate = selectedSchedule.schedule_date || selectedSchedule.timing?.schedule_date;
+
+      if (!trainId || !scheduleDate) {
+        alert("Schedule data tidak lengkap. train_id atau schedule_date tidak ditemukan.");
+        console.error('Missing data:', { trainId, scheduleDate, selectedSchedule });
+        return;
+      }
+
+      const originId = Number(searchForm.origin_station);
+      const destinationId = Number(searchForm.destination_station);
+
+      if (!originId || !destinationId) {
+        alert("Stasiun asal dan tujuan wajib dipilih.");
+        return;
+      }
+
+      if (passengers.length === 0) {
+        alert("Penumpang belum ditambahkan.");
+        return;
+      }
+
       const bookingPayload = {
-        user_id: user.id,
-        schedule_id: selectedSchedule.id,
-        origin_station_id: parseInt(searchForm.origin_station),
-        destination_station_id: parseInt(searchForm.destination_station),
-        passengers: passengers.map(passenger => ({
-          name: passenger.name,
-          nik: passenger.nik,
-          seat_id: passenger.seat_id
-        }))
+        train_id: trainId,              // ✅ Use extracted trainId
+        schedule_date: scheduleDate,    // ✅ Use extracted scheduleDate
+        origin_station_id: originId,
+        destination_station_id: destinationId,
+        passengers: passengers.map((p) => ({
+          seat_id: p.seat_id,
+          name: p.name,
+          nik: p.nik,
+        })),
       };
-      
-      console.log('Creating booking:', bookingPayload);
-      
-      // Gunakan API endpoint untuk create booking
+
+      console.log("FINAL PAYLOAD:", bookingPayload);
+
       const response = await apiService.createBooking(bookingPayload);
-      
+
       if (response && response.message) {
         alert(`${response.message} - Booking ID: ${response.data.booking_id}`);
       } else {
-        alert('Booking created successfully!');
+        alert("Booking created successfully!");
       }
-      
+
       resetBooking();
-      
     } catch (error) {
-      console.error('Error creating booking:', error);
-      alert('Error creating booking. Please try again.');
+      console.error("Booking error:", error);
+      alert("Booking gagal. Cek console.");
     } finally {
       setLoading(false);
     }
@@ -404,7 +454,8 @@ const BookingPage = () => {
           ) : (
             <div style={{ display: 'grid', gap: '1rem' }}>
               {availableSchedules.map(schedule => (
-                <div key={schedule.id} style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '1rem', display: 'flex', justifyContent: 'space-between' }}>
+                <div key={schedule.schedule_id}
+ style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                   <div>
                     <h4>Train #{schedule.train_id}</h4>
                     <p>Date: {schedule.schedule_date}</p>
@@ -452,7 +503,7 @@ const BookingPage = () => {
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {passengers.map((passenger, index) => (
                   <button
-                    key={`passenger-${index}`} // Add unique key
+                    key={`passenger-${index}`}
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
@@ -476,7 +527,7 @@ const BookingPage = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', maxWidth: '300px', margin: '0 auto' }}>
               {availableSeats.slice(0, 20).map((seat, index) => {
-                const seatId = seat.seat_id; // Use seat.seat_id
+                const seatId = seat.seat_id;
                 const isSelectedByCurrentPassenger = passengers[activePassengerIndex]?.seat_id === seatId;
                 const isSelectedByOtherPassenger = passengers.some((p, pIndex) => p.seat_id === seatId && pIndex !== activePassengerIndex);
                 const isBooked = seat.isBooked;
@@ -510,7 +561,7 @@ const BookingPage = () => {
                 
                 return (
                   <button
-                    key={`seat-${seatId}-${index}`} // Use seatId
+                    key={`seat-${seatId}-${index}`}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -620,4 +671,3 @@ const BookingPage = () => {
 };
 
 export default BookingPage;
-
