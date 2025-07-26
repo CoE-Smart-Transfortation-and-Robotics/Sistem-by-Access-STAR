@@ -381,6 +381,11 @@ class ApiService {
   async getTrainSchedules(trainId) {
     return this.request(`/trains/${trainId}/schedules`);
   }
+
+  async searchTrainSchedules(params) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/bookings/schedules?${queryString}`);
+  }
 }
 
 export const apiService = new ApiService();
