@@ -20,7 +20,7 @@ const AdminDashboard = () => {
       icon: '🚂',
       title: 'Train Management',
       description: 'Add, edit, and manage trains',
-      action: () => navigate('/admin/train-management'),
+      action: () => navigate('/admin/trains'),
       color: '#EF4444'
     },
     {
@@ -35,6 +35,13 @@ const AdminDashboard = () => {
     title: 'Train Schedules', 
     description: 'Manage train schedules and timetables', 
     action: () => navigate('/admin/schedules'), 
+    color: '#EF4444'
+    },
+    {
+    icon: '🛤️', 
+    title: 'Route Planner', 
+    description: 'Manage, Plan and optimize train routes', 
+    action: () => navigate('/admin/routes'), 
     color: '#EF4444'
   },
   ];
@@ -78,21 +85,21 @@ const AdminDashboard = () => {
     {
       icon: '💰',
       title: 'Revenue Management',
-      description: 'Track revenue and financial reports',
+      description: 'Coming soon...',
       action: 'revenue-management',
       color: '#10B981'
     },
     {
       icon: '📊',
       title: 'Analytics Dashboard',
-      description: 'View detailed analytics and insights',
+      description: 'Coming soon...',
       action: 'analytics',
       color: '#F59E0B'
     },
     {
       icon: '⚙️',
       title: 'System Settings',
-      description: 'Configure system parameters',
+      description: 'Coming soon...',
       action: 'system-settings',
       color: '#64748B'
     }
@@ -134,21 +141,22 @@ const AdminDashboard = () => {
       time: '6 hours ago',
       type: 'report'
     }
+    
   ];
 
   const handleActionClick = (action) => {
     switch (action) {
       case 'train-fleet':
-        navigate('/admin/train-management')
+        navigate('/admin/trains')
         break;
       case 'station-network':
         console.log('Station Network Management - Coming Soon');
         break;
       case 'schedule-management':
-        console.log('Schedule Management - Coming Soon');
+        navigate('/admin/schedules');
         break;
       case 'route-planning':
-        navigate('/admin/route-planning');
+        navigate('/admin/routes');
         break;
       case 'booking-system':
         console.log('Booking System - Coming Soon');
@@ -243,7 +251,7 @@ const AdminDashboard = () => {
 
           {/* Recent Activities */}
           <div className="recent-activities-section">
-            <h2>Recent System Activities</h2>
+            <h2>Recent System Activities (dummy)</h2>
             <div className="activities-container">
               <div className="activities-list">
                 {recentActivities.map((activity, index) => (
@@ -264,7 +272,7 @@ const AdminDashboard = () => {
               </div>
               
               <div className="activity-summary">
-                <h3>Today's Summary</h3>
+                <h3>Today's Summary (dummy)</h3>
                 <div className="summary-stats">
                   <div className="summary-item">
                     <span className="summary-number">12</span>
