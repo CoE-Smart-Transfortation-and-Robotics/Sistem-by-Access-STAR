@@ -6,10 +6,10 @@ module.exports = {
     try {
       const now = new Date();
 
-      /* 1. Tambah kereta Lodaya */
+      // 1. Tambah kereta Lodaya
       await queryInterface.bulkInsert('trains', [{
         train_name : 'Lodaya',
-        train_code : 'LDY',
+        train_code : '78',
         category_id: 1,
         created_at : now,
         updated_at : now
@@ -20,40 +20,49 @@ module.exports = {
         { transaction: t }
       );
 
-      /* 2. Tambah 3 gerbong — Ekonomi, Bisnis, Eksekutif */
+      // 2. Tambah 2 gerbong — Ekonomi, Eksekutif
       const carriagesData = [
         { train_id: trainId, carriage_number: 1, class: 'Ekonomi',   created_at: now, updated_at: now },
-        { train_id: trainId, carriage_number: 2, class: 'Bisnis',    created_at: now, updated_at: now },
-        { train_id: trainId, carriage_number: 3, class: 'Eksekutif', created_at: now, updated_at: now }
+        { train_id: trainId, carriage_number: 2, class: 'Eksekutif', created_at: now, updated_at: now }
       ];
       await queryInterface.bulkInsert('carriages', carriagesData, { transaction: t });
 
       const [carriages] = await queryInterface.sequelize.query(
-        `SELECT id, carriage_number FROM carriages WHERE train_id = ${trainId} ORDER BY carriage_number`,
+        `SELECT id, carriage_number, class FROM carriages WHERE train_id = ${trainId} ORDER BY carriage_number`,
         { transaction: t }
       );
 
-      /* 3. Kursi 1A‑5D di tiap gerbong */
-      const letters   = ['A','B','C','D'];
+      // 3. Kursi sesuai kelas
+      const letters = ['A','B','C','D'];
       const seatsData = [];
+
       for (const c of carriages) {
-        for (let row = 1; row <= 5; row++) {
+        const isEkonomi = c.class === 'Ekonomi';
+        const totalRows = isEkonomi ? 18 : 13;
+
+        for (let row = 1; row <= totalRows; row++) {
           for (const l of letters) {
+            // Skip 1D dan 13A untuk eksekutif
+            if (!isEkonomi) {
+              if ((row === 1 && l === 'D') || (row === 13 && l === 'A')) {
+                continue;
+              }
+            }
             seatsData.push({
-              carriage_id : c.id,
-              seat_number : `${row}${l}`,
-              created_at  : now,
-              updated_at  : now
+              carriage_id: c.id,
+              seat_number: `${row}${l}`,
+              created_at : now,
+              updated_at : now
             });
           }
         }
       }
       await queryInterface.bulkInsert('seats', seatsData, { transaction: t });
 
-      /* 4. Buat jadwal besok */
+      // 4. Buat jadwal besok
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const scheduleDate = tomorrow.toISOString().slice(0, 10); /* YYYY‑MM‑DD */
+      const scheduleDate = tomorrow.toISOString().slice(0, 10);
 
       await queryInterface.bulkInsert('train_schedules', [{
         train_id     : trainId,
@@ -67,13 +76,12 @@ module.exports = {
         { transaction: t }
       );
 
-      /* 5. Rute + waktu real KA Lodaya pagi (Gapeka 2025) */
+      // 5. Rute + waktu real KA Lodaya pagi (Gapeka 2025)
       const stationCodes = [
         'BD','KAC','CPD','TSM','CI','BJR','SDR','MA',
         'KYA','GB','KM','KTA','WT','YK','KT','SLO'
       ];
 
-      /* Kamus waktu (arrival/departure) dalam HH:MM */
       const timeMap = {
         BD : { arr: null   , dep: '06:30' },
         KAC: { arr: '06:39', dep: '06:41' },
@@ -125,7 +133,6 @@ module.exports = {
 
   async down (queryInterface) {
     await queryInterface.sequelize.transaction(async (t) => {
-      /* Hapus semua data yang terkait Lodaya */
       await queryInterface.sequelize.query(`
         DELETE sr FROM schedule_routes sr
         JOIN train_schedules ts ON sr.schedule_id = ts.id

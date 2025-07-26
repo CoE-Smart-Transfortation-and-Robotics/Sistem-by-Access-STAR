@@ -641,4 +641,147 @@ router.delete("/:id/cancel", authenticate, authorizeRole("user"), bookingControl
  */
 router.get("/mine", authenticate, authorizeRole("user"), bookingController.getMyBookings);
 
+/**
+ * @swagger
+ * /api/bookings/schedules:
+ *   get:
+ *     tags:
+ *       - Bookings
+ *     summary: Ambil jadwal kereta berdasarkan stasiun asal, tujuan, tanggal, dan kategori
+ *     description: Mengembalikan daftar jadwal kereta dari stasiun asal ke tujuan pada tanggal tertentu dan kategori tertentu.
+ *     parameters:
+ *       - in: query
+ *         name: origin_station_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID stasiun keberangkatan
+ *       - in: query
+ *         name: destination_station_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID stasiun tujuan
+ *       - in: query
+ *         name: schedule_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Tanggal keberangkatan (format YYYY-MM-DD)
+ *       - in: query
+ *         name: train_category
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID kategori kereta (wajib diisi)
+ *     responses:
+ *       200:
+ *         description: Jadwal kereta berhasil ditemukan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Jadwal kereta berhasil ditemukan.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       schedule_id:
+ *                         type: integer
+ *                         example: 1
+ *                       train:
+ *                         type: object
+ *                         properties:
+ *                           train_id:
+ *                             type: integer
+ *                             example: 1
+ *                           train_name:
+ *                             type: string
+ *                             example: Lodaya
+ *                           train_code:
+ *                             type: string
+ *                             example: LDY
+ *                           category:
+ *                             type: string
+ *                             example: Antar Kota Antar Provinsi
+ *                       route:
+ *                         type: object
+ *                         properties:
+ *                           origin_station:
+ *                             type: string
+ *                             example: Bandung
+ *                           destination_station:
+ *                             type: string
+ *                             example: Gombong
+ *                           distance:
+ *                             type: integer
+ *                             example: 9
+ *                       timing:
+ *                         type: object
+ *                         properties:
+ *                           schedule_date:
+ *                             type: string
+ *                             format: date
+ *                             example: 2025-07-20
+ *                           departure_time:
+ *                             type: string
+ *                             example: "06:30:00"
+ *                           arrival_time:
+ *                             type: string
+ *                             example: "11:42:00"
+ *                       seat_classes:
+ *                         type: object
+ *                         additionalProperties:
+ *                           type: integer
+ *                         example:
+ *                           Eksekutif: 20
+ *                           Bisnis: 20
+ *                           Ekonomi: 20
+ *                       pricing:
+ *                         type: object
+ *                         description: Harga per orang untuk setiap kelas, dihitung berdasarkan jarak
+ *                         additionalProperties:
+ *                           type: integer
+ *                         example:
+ *                           Eksekutif: 540000
+ *                           Bisnis: 360000
+ *                           Ekonomi: 225000
+ *       400:
+ *         description: Parameter tidak lengkap
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: origin_station_id, destination_station_id, schedule_date, dan train_category wajib diisi.
+ *       404:
+ *         description: Jadwal tidak ditemukan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Tidak ada jadwal kereta yang tersedia untuk rute dan tanggal tersebut.
+ *       500:
+ *         description: Gagal mengambil jadwal
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Gagal mengambil jadwal kereta.
+ */
+router.get('/schedules', bookingController.getTrainSchedules);
+
 module.exports = router;
