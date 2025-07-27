@@ -19,7 +19,8 @@ import TrainSchedulePage from './pages/admin/TrainSchedulePage';
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
-import BookingPage from './pages/user/BookingPage'; // ✅ Import BookingPage
+import BookingPage from './pages/user/BookingPage';
+import BookingHistoryPage from './pages/user/BookingHistoryPage';  // ✅ Import BookingPage
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -41,6 +42,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BookingPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/bookinghistory" 
+        element={
+          <ProtectedRoute>
+            <BookingHistoryPage />
           </ProtectedRoute>
         } 
       />

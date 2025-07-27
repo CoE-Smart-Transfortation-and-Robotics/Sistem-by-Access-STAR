@@ -34,10 +34,11 @@ const Layout = ({ children }) => {
     if (user?.role === 'admin') {
       return [
         { name: 'Dashboard', path: '/admin/dashboard' },
-        { name: 'User Management', path: '/admin/users' },
-        { name: 'Train Management', path: '/admin/train-management' },
-        { name: 'Route Management', path: '/admin/route-planning' },
-        { name: 'Schedule', path: '/admin/schedules' }
+        { name: 'User Mgt', path: '/admin/users' },
+        { name: 'Train Mgt', path: '/admin/trains' },
+        { name: 'Route Mgt', path: '/admin/routes' },
+        { name: 'Station Mgt', path: '/admin/stations' },
+        { name: 'Schedule', path: '/admin/schedules' },
       ];
     } else {
       return [
@@ -148,7 +149,7 @@ const Layout = ({ children }) => {
                     </div>
                     <button 
                       onClick={() => {
-                        handleNavigation('/user/profile');
+                        handleNavigation('/profile');
                         setProfileOpen(false);
                       }}
                       className="dropdown-item"

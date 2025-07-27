@@ -153,7 +153,7 @@ const UserDashboard = () => {
           
           <div
             className="quick-action-card secondary"
-            onClick={() => navigate('/booking')}
+            onClick={() => navigate('/bookinghistory')}
           >
             <div className="action-icon">📋</div>
             <h3>Tiket Saya</h3>
@@ -163,7 +163,7 @@ const UserDashboard = () => {
           
           <div
             className="quick-action-card tertiary"
-            onClick={() => navigate('/booking')}
+            onClick={() => navigate('/bookinghistory')}
           >
             <div className="action-icon">💳</div>
             <h3>Pembatalan</h3>
