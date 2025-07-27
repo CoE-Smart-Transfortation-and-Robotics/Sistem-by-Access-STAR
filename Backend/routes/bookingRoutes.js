@@ -536,4 +536,43 @@ router.delete("/:id/cancel", authenticate, authorizeRole("user"), bookingControl
  */
 router.get("/mine", authenticate, authorizeRole("user"), bookingController.getMyBookings);
 
+/**
+ * @swagger
+ * /api/bookings/admin/all:
+ *   get:
+ *     summary: Ambil semua booking (Admin only)
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List semua booking
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   user_id:
+ *                     type: integer
+ *                   status:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                   booking_date:
+ *                     type: string
+ *                   passengers:
+ *                     type: array
+ *                   TrainSchedule:
+ *                     type: object
+ *                   OriginStation:
+ *                     type: object
+ *                   DestinationStation:
+ *                     type: object
+ */
+router.get('/admin/all', authenticate, authorizeRole('admin'), bookingController.getAllBookings);
+
 module.exports = router;
