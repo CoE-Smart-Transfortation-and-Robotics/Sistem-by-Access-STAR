@@ -27,7 +27,7 @@ const AdminDashboard = () => {
       icon: '🏢',
       title: 'Station Management',
       description: 'Manage stations and locations',
-      action: () => console.log('Station Management - Coming Soon'),
+      action: () => navigate('/admin/stations'),
       color: '#06B6D4'
     },
     {

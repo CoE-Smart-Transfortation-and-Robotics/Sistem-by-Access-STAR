@@ -386,6 +386,8 @@ class ApiService {
     const queryString = new URLSearchParams(params).toString();
     return this.request(`/bookings/schedules?${queryString}`);
   }
+
+  
 }
 
 export const apiService = new ApiService();
