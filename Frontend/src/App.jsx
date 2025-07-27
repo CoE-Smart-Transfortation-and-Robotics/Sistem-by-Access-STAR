@@ -15,6 +15,7 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import TrainManagementPage from './pages/admin/TrainManagementPage';
 import RouteManagementPage from './pages/admin/RouteManagementPage';
 import TrainSchedulePage from './pages/admin/TrainSchedulePage';
+import StationManagementPage from './pages/admin/StationPage';
 
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';
@@ -111,6 +112,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute requiredRole="admin">
             <TrainSchedulePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/stations" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <StationManagementPage />
           </ProtectedRoute>
         } 
       />
