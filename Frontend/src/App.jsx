@@ -22,6 +22,7 @@ import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
 import BookingPage from './pages/user/BookingPage';
 import BookingHistoryPage from './pages/user/BookingHistoryPage';  // ✅ Import BookingPage
+import { Layout } from 'lucide-react';
 
 function AppRoutes() {
   const { user, loading } = useAuth();

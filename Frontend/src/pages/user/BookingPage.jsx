@@ -1,8 +1,16 @@
 import React from 'react';
-import BookingComponent from '../../components/user/Booking'; // ✅ Ganti nama
+import Layout from '../../components/common/Layout';
+import BookingComponent from '../../components/user/Booking';
+import ProtectedRoute from '../../components/common/ProtectedRoute';
 
 const BookingPage = () => {
-  return <BookingComponent />; // ✅ Pakai nama baru
+  return (
+    <ProtectedRoute>
+      <Layout>
+        <BookingComponent />
+      </Layout>
+    </ProtectedRoute>
+  );
 };
 
 export default BookingPage;
