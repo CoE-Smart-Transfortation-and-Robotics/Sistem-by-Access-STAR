@@ -412,6 +412,52 @@ module.exports = {
     }
   },
 
+  async getAllBookings(req, res) {
+    try {
+      const bookings = await Booking.findAll({
+        attributes: [
+          'id', 
+          'user_id', 
+          'schedule_id', 
+          'origin_station_id', 
+          'destination_station_id', 
+          'status', 
+          'price', 
+          'booking_date',
+          'created_at',
+          'updated_at'
+        ],
+        include: [
+          {
+            model: BookingPassenger,
+            as: "passengers",
+            attributes: ["name", "nik", "seat_id"],
+          },
+          {
+            model: TrainSchedule,
+            attributes: ["schedule_date"],
+            include: [{ model: Train, attributes: ["train_name", "train_code"] }]
+          },
+          {
+            model: Station,
+            as: "OriginStation",
+            attributes: ["station_name"]
+          },
+          {
+            model: Station,
+            as: "DestinationStation", 
+            attributes: ["station_name"]
+          }
+        ],
+      });
+
+      return res.status(200).json(bookings);
+    } catch (err) {
+      console.error("Error getAllBookings:", err);
+      return res.status(500).json({ message: "Gagal mengambil data booking." });
+    }
+  },
+
   async getMyBookings(req, res) {
     try {
       const userId = req.user.id;
