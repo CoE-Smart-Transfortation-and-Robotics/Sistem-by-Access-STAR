@@ -588,156 +588,7 @@ const HeroSection = () => {
     );
 };
 
-const ScheduleSection = () => {
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
 
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                type: 'spring',
-                stiffness: 100
-            }
-        }
-    };
-
-    return (
-        <Section id="schedules" className="schedule-section">
-            <div className="section-header-landing">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                >
-                    <h2 className="section-title-landing">
-                        <span className="section-title-main">
-                            Jadwal
-                        </span>
-                        <span className="section-title-accent">
-                            {' '}Premium
-                        </span>
-                    </h2>
-                    <p className="section-description">
-                        Nikmati perjalanan eksklusif dengan jadwal yang telah disesuaikan untuk kenyamanan maksimal
-                    </p>
-                    <div className="section-divider"></div>
-                </motion.div>
-            </div>
-
-            <motion.div
-                className="schedule-grid"
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-            >
-                {dummySchedules.map((schedule, index) => (
-                    <motion.div
-                        key={schedule.id}
-                        variants={itemVariants}
-                        className="schedule-card"
-                    >
-                        <div className="schedule-card-header">
-                            <div className="schedule-train-info">
-                                <div className="schedule-train-icon">
-                                    <Train size={24} />
-                                </div>
-                                <div className="schedule-train-details">
-                                    <h3 className="schedule-train-name">
-                                        {schedule.Train?.train_name || 'Nama Kereta'}
-                                    </h3>
-                                    <p className="schedule-train-meta">
-                                        {schedule.Train?.train_code || 'Kode'} • Executive Class
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="schedule-date">
-                                <div className="schedule-date-badge">
-                                    {new Date(schedule.schedule_date).toLocaleDateString('id-ID', {
-                                        day: 'numeric',
-                                        month: 'short'
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="schedule-route">
-                            <div className="schedule-time-info">
-                                <Clock size={16} />
-                                <div className="schedule-time-details">
-                                    <p className="schedule-time">06:00</p>
-                                    <p className="schedule-time-label">Keberangkatan</p>
-                                </div>
-                            </div>
-                            <div className="schedule-route-line">
-                                <div className="schedule-route-track"></div>
-                                <div className="schedule-route-train">
-                                    <Train size={16} />
-                                </div>
-                            </div>
-                            <div className="schedule-time-info">
-                                <Clock size={16} />
-                                <div className="schedule-time-details">
-                                    <p className="schedule-time">18:00</p>
-                                    <p className="schedule-time-label">Kedatangan</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="schedule-card-footer">
-                            <div className="schedule-features">
-                                <div className="schedule-feature">
-                                    <Users size={14} />
-                                    <span>Available</span>
-                                </div>
-                                <div className="schedule-feature">
-                                    <Star size={14} />
-                                    <span>Premium</span>
-                                </div>
-                            </div>
-                            <motion.button
-                                className="schedule-detail-btn"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => alert('Demo: Fitur detail jadwal akan menampilkan informasi lengkap kereta!')}
-                            >
-                                Lihat Detail
-                            </motion.button>
-                        </div>
-                    </motion.div>
-                ))}
-            </motion.div>
-
-            <motion.div
-                className="schedule-view-all"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-            >
-                <motion.button
-                    className="schedule-view-all-btn"
-                    whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(52,152,219,0.4)" }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => alert('Demo: Fitur ini akan menampilkan semua jadwal kereta!')}
-                >
-                    Lihat Semua Jadwal
-                </motion.button>
-            </motion.div>
-        </Section>
-    );
-};
 
 const MapAndStationsSection = () => {
     return (
@@ -1205,14 +1056,11 @@ const Landing = () => {
             {/* Hero Section */}
             <HeroSection />
 
-            {/* Schedule Section */}
-            <ScheduleSection />
+            {/* Stations Carousel Section */}
+            <StationsCarouselSection />
 
             {/* Map and Stations Section */}
             <MapAndStationsSection />
-
-            {/* Stations Carousel Section */}
-            <StationsCarouselSection />
 
             {/* Services Section */}
             <ServicesSection />
