@@ -586,6 +586,77 @@
       let refreshInterval;
       let lastMessageCount = 0;
 
+      // Helper function untuk parse timestamp yang fleksibel
+      function parseTimestamp(timestamp) {
+        if (!timestamp) return new Date();
+
+        // Jika sudah berupa Date object
+        if (timestamp instanceof Date) return timestamp;
+
+        // Jika berupa string ISO
+        if (typeof timestamp === "string") {
+          const date = new Date(timestamp);
+          return isNaN(date.getTime()) ? new Date() : date;
+        }
+
+        // Jika berupa Firestore timestamp object
+        if (timestamp && typeof timestamp === "object") {
+          if (timestamp._seconds !== undefined) {
+            return new Date(
+              timestamp._seconds * 1000 +
+                (timestamp._nanoseconds || 0) / 1000000
+            );
+          }
+          if (timestamp.seconds !== undefined) {
+            return new Date(
+              timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+            );
+          }
+        }
+
+        // Fallback ke current time
+        return new Date();
+      }
+
+      // Load saved user data saat halaman dimuat
+      window.addEventListener("DOMContentLoaded", function () {
+        const savedUser = localStorage.getItem("wa_chat_current_user");
+        if (savedUser) {
+          try {
+            currentUser = JSON.parse(savedUser);
+            // Auto login jika ada data tersimpan
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("chatApp").classList.add("active");
+
+            // Load chat yang terakhir juga jika ada
+            const savedChatUser = localStorage.getItem(
+              "wa_chat_current_chat_user"
+            );
+            if (savedChatUser) {
+              currentChatUser = JSON.parse(savedChatUser);
+              document.getElementById("contactName").textContent =
+                currentChatUser.name;
+              document.getElementById("contactAvatar").textContent =
+                currentChatUser.name.charAt(0).toUpperCase();
+              document.getElementById("contactStatus").textContent = "online";
+              document.getElementById("messageInput").disabled = false;
+              document.querySelector(".send-btn").disabled = false;
+              document.getElementById("messageInput").placeholder =
+                "Ketik pesan...";
+              document.getElementById("chatWithUserId").value =
+                currentChatUser.id;
+
+              loadChatHistory();
+              setupAutoRefresh();
+            }
+          } catch (error) {
+            console.error("Error loading saved user:", error);
+            localStorage.removeItem("wa_chat_current_user");
+            localStorage.removeItem("wa_chat_current_chat_user");
+          }
+        }
+      });
+
       // Login form handler
       document
         .getElementById("loginForm")
@@ -625,6 +696,12 @@
                 email: data.user.email,
                 token: data.token,
               };
+
+              // Simpan data user ke localStorage
+              localStorage.setItem(
+                "wa_chat_current_user",
+                JSON.stringify(currentUser)
+              );
 
               // Switch to chat app langsung tanpa notifikasi
               setTimeout(() => {
@@ -671,8 +748,6 @@
         }, 3000);
       }
 
-      // Hapus function showSuccess karena tidak digunakan lagi
-
       function toggleUserSelect() {
         const userSelect = document.getElementById("userSelect");
         userSelect.classList.toggle("show");
@@ -690,6 +765,12 @@
           id: parseInt(userId),
           name: `User ${userId}`,
         };
+
+        // Simpan current chat user ke localStorage
+        localStorage.setItem(
+          "wa_chat_current_chat_user",
+          JSON.stringify(currentChatUser)
+        );
 
         // Reset message count untuk chat baru
         lastMessageCount = 0;
@@ -717,7 +798,11 @@
       function logout() {
         currentUser = null;
         currentChatUser = null;
-        lastMessageCount = 0; // Reset message count
+        lastMessageCount = 0;
+
+        // Hapus data dari localStorage
+        localStorage.removeItem("wa_chat_current_user");
+        localStorage.removeItem("wa_chat_current_chat_user");
 
         if (refreshInterval) {
           clearInterval(refreshInterval);
@@ -728,6 +813,7 @@
         document.getElementById("loginScreen").style.display = "flex";
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
+        document.getElementById("chatWithUserId").value = "";
         document.getElementById("chatContainer").innerHTML = `
         <div class="empty-state">
           <i class="fab fa-whatsapp"></i>
@@ -785,8 +871,7 @@
             }),
           });
 
-          // Ambil responnya (walaupun gak akan dipake buat alert)
-          await response.json();
+          const data = await response.json();
 
           if (response.ok) {
             // Sukses kirim → refresh chat biar sinkron
@@ -795,6 +880,16 @@
               loadChatHistory();
             }, 1000);
           } else {
+            // Jika token expired, logout otomatis
+            if (
+              response.status === 401 ||
+              (data.message && data.message.includes("token"))
+            ) {
+              showError("Sesi berakhir, silakan login ulang");
+              setTimeout(() => logout(), 2000);
+              return;
+            }
+
             // Rollback: hapus pesan dummy kalau gagal
             const container = document.getElementById("chatContainer");
             const lastMessage = container.lastElementChild;
@@ -835,6 +930,12 @@
             // Fallback jika response langsung array
             displayMessages(data);
           } else {
+            // Jika token expired, logout otomatis
+            if (response.status === 401) {
+              showError("Sesi berakhir, silakan login ulang");
+              setTimeout(() => logout(), 2000);
+              return;
+            }
             console.error(
               "Failed to load chat:",
               data.message || "Invalid response format"
@@ -864,14 +965,7 @@
           const newMessages = messages.slice(lastMessageCount);
           newMessages.forEach((msg) => {
             const isCurrentUser = msg.sender_id === currentUser.id;
-            const timestamp = msg.timestamp
-              ? new Date(
-                  msg.timestamp._seconds * 1000 +
-                    msg.timestamp._nanoseconds / 1000000
-                )
-              : msg.createdAt
-              ? new Date(msg.createdAt)
-              : new Date();
+            const timestamp = parseTimestamp(msg.timestamp || msg.createdAt);
             addMessage(msg.message, isCurrentUser, timestamp, wasAtBottom);
           });
           lastMessageCount = messages.length;
@@ -895,14 +989,7 @@
 
         messages.forEach((msg) => {
           const isCurrentUser = msg.sender_id === currentUser.id;
-          const timestamp = msg.timestamp
-            ? new Date(
-                msg.timestamp._seconds * 1000 +
-                  msg.timestamp._nanoseconds / 1000000
-              )
-            : msg.createdAt
-            ? new Date(msg.createdAt)
-            : new Date();
+          const timestamp = parseTimestamp(msg.timestamp || msg.createdAt);
           addMessage(msg.message, isCurrentUser, timestamp, false);
         });
 
