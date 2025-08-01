@@ -342,6 +342,32 @@ class ApiService {
     });
   }
 
+  // ✅ Tambah endpoints yang masih missing:
+  async getMyBookings() {
+    return this.request('/bookings/mine');
+  }
+
+  async getAllBookings() {
+    return this.request('/bookings');
+  }
+
+  async getBookingById(id) {
+    return this.request(`/bookings/${id}`);
+  }
+
+  async cancelBooking(id) {
+    return this.request(`/bookings/${id}/cancel`, {
+      method: 'PUT',
+    });
+  }
+
+  async updateBookingStatus(id, status) {
+    return this.request(`/bookings/${id}/status`, {
+      method: 'PUT',
+      body: { status },
+    });
+  }
+
   // ✅ Fix: Tambah train search endpoint
   async searchTrainsByRoute(params) {
     const queryString = new URLSearchParams(params).toString();
@@ -355,6 +381,13 @@ class ApiService {
   async getTrainSchedules(trainId) {
     return this.request(`/trains/${trainId}/schedules`);
   }
+
+  async searchTrainSchedules(params) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/bookings/schedules?${queryString}`);
+  }
+
+  
 }
 
 export const apiService = new ApiService();

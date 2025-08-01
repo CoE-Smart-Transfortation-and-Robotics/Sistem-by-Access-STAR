@@ -14,117 +14,136 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import TrainManagementPage from './pages/admin/TrainManagementPage';
 import RouteManagementPage from './pages/admin/RouteManagementPage';
-
-
 import TrainSchedulePage from './pages/admin/TrainSchedulePage';
+import StationManagementPage from './pages/admin/StationPage';
 
 // User Pages
 import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
+import BookingPage from './pages/user/BookingPage';
+import BookingHistoryPage from './pages/user/BookingHistoryPage';  // ✅ Import BookingPage
 
-import './App.css';
+function AppRoutes() {
+  const { user, loading } = useAuth();
 
-const RoleBasedRedirect = () => {
-  const { user, loading, isAuthenticated } = useAuth();
-  
-  // Tunggu loading selesai dulu
   if (loading) {
     return <div>Loading...</div>;
   }
-  
-  // Kalau belum login, redirect ke landing page
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/landing" replace />;
-  }
-  
-  // Kalau sudah login, redirect sesuai role
-  if (user.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-  
-  return <Navigate to="/user/dashboard" replace />;
-};
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      
+      {/* ✅ Tambahkan route booking */}
+      <Route 
+        path="/booking" 
+        element={
+          <ProtectedRoute>
+            <BookingPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/bookinghistory" 
+        element={
+          <ProtectedRoute>
+            <BookingHistoryPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* User Routes */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <UserDashboardPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Admin Routes */}
+      <Route 
+        path="/admin" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/users" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <UserManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/trains" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <TrainManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/routes" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <RouteManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/schedules" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <TrainSchedulePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/stations" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <StationManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Catch all - redirect to appropriate dashboard */}
+      <Route 
+        path="*" 
+        element={
+          user ? (
+            user.role === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } 
+      />
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="App">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/landing" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-
-            <Route 
-              path="/admin/users" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <UserManagementPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/train-management" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <TrainManagementPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/route-planning" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <RouteManagementPage />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/user/profile" 
-              element={
-                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboardPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/schedules" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <TrainSchedulePage />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* Default Route with Role-based Redirect */}
-            {/* ✅ Hapus ProtectedRoute wrapper */}
-            <Route 
-              path="/" 
-              element={<RoleBasedRedirect />}
-            />
-
-            {/* User Dashboard */}
-            <Route 
-              path="/user/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={['user', 'visitor', 'admin']}>
-                  <UserDashboardPage />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </div>
+        <AppRoutes />
       </Router>
     </AuthProvider>
   );
