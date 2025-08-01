@@ -584,7 +584,7 @@
       let currentUser = null;
       let currentChatUser = null;
       let refreshInterval;
-      let lastMessageCount = 0; // Track jumlah pesan terakhir
+      let lastMessageCount = 0;
 
       // Login form handler
       document
@@ -764,13 +764,13 @@
           return;
         }
 
-        // Clear input and show temporarily
+        // Clear input dan reset tinggi textarea
         messageInput.value = "";
         messageInput.style.height = "auto";
 
-        // Add message immediately untuk UX yang lebih baik
+        // Tambahkan pesan langsung ke UI (optimistic update)
         addMessage(message, true, new Date());
-        lastMessageCount++; // Increment count untuk pesan yang baru dikirim
+        lastMessageCount++;
 
         try {
           const response = await fetch(`${apiUrl}/chat`, {
@@ -785,17 +785,17 @@
             }),
           });
 
-          const data = await response.json();
+          // Ambil responnya (walaupun gak akan dipake buat alert)
+          await response.json();
 
-          if (response.ok && data.success) {
-            // Refresh setelah 1 detik untuk sinkronisasi tanpa notifikasi
+          if (response.ok) {
+            // Sukses kirim → refresh chat biar sinkron
             setTimeout(() => {
               lastMessageCount = 0;
               loadChatHistory();
             }, 1000);
           } else {
-            showError(data.message || "Gagal mengirim pesan");
-            // Rollback jika gagal
+            // Rollback: hapus pesan dummy kalau gagal
             const container = document.getElementById("chatContainer");
             const lastMessage = container.lastElementChild;
             if (lastMessage && !lastMessage.classList.contains("empty-state")) {
@@ -804,8 +804,7 @@
             lastMessageCount--;
           }
         } catch (error) {
-          showError("Error: " + error.message);
-          // Rollback jika error
+          // Silent rollback tanpa alert
           const container = document.getElementById("chatContainer");
           const lastMessage = container.lastElementChild;
           if (lastMessage && !lastMessage.classList.contains("empty-state")) {

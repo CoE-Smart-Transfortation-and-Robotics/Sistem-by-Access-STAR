@@ -1,7 +1,7 @@
 const db = require('../firebase');
 const { User } = require('../models');
+require('dotenv').config();
 
-// Kirim Chat
 exports.sendChat = async (req, res) => {
   const senderId = req.user.id;
   const { receiver_id, message } = req.body;
@@ -17,6 +17,7 @@ exports.sendChat = async (req, res) => {
     const sortedParticipants = [senderId, parseInt(receiver_id)].sort((a, b) => a - b);
 
     const chat = {
+      project_id: process.env.PROJECT_ID || 'default',
       sender_id: senderId,
       receiver_id: parseInt(receiver_id),
       message,
@@ -33,7 +34,6 @@ exports.sendChat = async (req, res) => {
   }
 };
 
-// Ambil chat antara dua user
 exports.getChats = async (req, res) => {
   const userId = req.user.id;
   const { with_user_id } = req.query;
@@ -46,6 +46,7 @@ exports.getChats = async (req, res) => {
     const sortedParticipants = [userId, parseInt(with_user_id)].sort((a, b) => a - b);
 
     const snapshot = await db.collection('chats')
+      .where('project_id', '==', process.env.PROJECT_ID || 'default')
       .where('participants', '==', sortedParticipants)
       .orderBy('timestamp')
       .get();
