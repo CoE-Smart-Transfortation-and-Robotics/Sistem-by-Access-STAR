@@ -1148,9 +1148,57 @@
 			"item": [
 				{
 					"name": "Check Available Seats",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzUyNzU3OTA3LCJleHAiOjE3NTMzNjI3MDd9.Nsau8FWMAxbPLTniN0g1M1ScEgbeUrW_DwKgT_Bjbyw",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": []
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"train_name\": \"Lodaya\",\r\n  \"train_code\": \"LD003\",\r\n  \"category_id\": 2\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:9000/api/bookings/available-seats?train_id=1&origin_station_id=1&destination_station_id=4&schedule_date=2025-07-17",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"bookings",
+								"available-seats"
+							],
+							"query": [
+								{
+									"key": "train_id",
+									"value": "1"
+								},
+								{
+									"key": "origin_station_id",
+									"value": "1"
+								},
+								{
+									"key": "destination_station_id",
+									"value": "4"
+								},
+								{
+									"key": "schedule_date",
+									"value": "2025-07-17"
+								}
+							]
+						}
 					},
 					"response": []
 				},
@@ -1221,6 +1269,102 @@
 				},
 				{
 					"name": "Get My Booking",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Get Jadwal Kereta",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "Chat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzU0MDEwNzI3LCJleHAiOjE3NTQ2MTU1Mjd9.FtIsahOn7jwW4jL2_M2raMtLHXgF0lYlwvLT8HxJCE8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"receiver_id\": 1,\r\n  \"message\": \"Oi, inpo2!\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/api/chat",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzU0MDEwNzI3LCJleHAiOjE3NTQ2MTU1Mjd9.FtIsahOn7jwW4jL2_M2raMtLHXgF0lYlwvLT8HxJCE8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/chat?with_user_id=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"chat"
+							],
+							"query": [
+								{
+									"key": "with_user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Urgent Chats",
 					"request": {
 						"method": "GET",
 						"header": []
