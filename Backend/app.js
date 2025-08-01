@@ -18,6 +18,7 @@ const seatRoutes = require('./routes/seatRoutes');
 const trainScheduleRoutes = require('./routes/trainScheduleRoutes');
 const scheduleRouteRoutes = require('./routes/scheduleRouteRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/seats', seatRoutes);
 app.use('/api/train-schedules', trainScheduleRoutes);
 app.use('/api/schedule-routes', scheduleRouteRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running');
