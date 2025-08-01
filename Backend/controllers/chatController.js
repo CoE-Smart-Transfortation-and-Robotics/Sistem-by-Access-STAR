@@ -9,7 +9,12 @@ const ai = new GoogleGenAI({
 
 async function analyzeUrgency(message, senderRole, receiverRole) {
   if (senderRole !== 'user' || receiverRole !== 'admin') {
-    return { isUrgent: false, confidence: 0.0, category: 'non-user-to-admin', reason: 'Not user to admin communication' };
+    return {
+      isUrgent: false,
+      confidence: 0.0,
+      category: 'non-user-to-admin',
+      reason: 'Not user to admin communication'
+    };
   }
 
   try {
@@ -90,7 +95,6 @@ async function analyzeUrgency(message, senderRole, receiverRole) {
   }
 }
 
-// Fungsi untuk bersihin field undefined
 function sanitize(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -136,7 +140,6 @@ exports.sendChat = async (req, res) => {
     const chat = sanitize(rawChat);
     const docRef = await db.collection('chats').add(chat);
 
-    // 🔥 Analisis dilakukan setelah response dikirim
     analyzeUrgency(message, sender.role, receiver.role).then(async (urgencyAnalysis) => {
       let priorityLevel = null;
       if (urgencyAnalysis.isUrgent) {
@@ -175,7 +178,6 @@ exports.sendChat = async (req, res) => {
       console.error('Async AI Analysis Error:', err);
     });
 
-    // ✅ Langsung kirim response ke client
     return res.status(201).json({
       message: 'Chat berhasil dikirim (analisis menyusul)',
       chat_id: docRef.id
@@ -197,17 +199,21 @@ exports.getChats = async (req, res) => {
 
   try {
     const sortedParticipants = [userId, parseInt(with_user_id)].sort((a, b) => a - b);
-    
+
     const snapshot = await db.collection('chats')
       .where('project_id', '==', process.env.PROJECT_ID || 'default')
       .where('participants', '==', sortedParticipants)
       .orderBy('timestamp')
       .get();
 
-    const messages = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const messages = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        is_urgent: data.urgency_analysis?.is_urgent ?? false
+      };
+    });
 
     return res.status(200).json(messages);
   } catch (err) {
@@ -218,7 +224,7 @@ exports.getChats = async (req, res) => {
 
 exports.getUrgentChats = async (req, res) => {
   const userRole = req.user.role;
-  
+
   if (userRole !== 'admin') {
     return res.status(403).json({ error: 'Akses ditolak' });
   }
@@ -230,10 +236,14 @@ exports.getUrgentChats = async (req, res) => {
       .limit(50)
       .get();
 
-    const urgentMessages = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const urgentMessages = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        is_urgent: data.urgency_analysis?.is_urgent ?? false
+      };
+    });
 
     return res.status(200).json(urgentMessages);
   } catch (error) {
