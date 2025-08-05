@@ -1,7 +1,9 @@
 import React from 'react';
-import Layout from '../../components/common/Layout';
-import BookingComponent from '../../components/user/Booking';
+
+import BookingComponent from '../../components/user/Booking'; // ✅ Ganti nama
 import ProtectedRoute from '../../components/common/ProtectedRoute';
+import Layout from '../../components/common/Layout';
+
 
 const BookingPage = () => {
   return (
