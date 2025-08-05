@@ -233,4 +233,28 @@ router.get('/', authenticate, chatController.getChats);
  */
 router.get('/urgent', authenticate, authorizeRole('admin'), chatController.getUrgentChats);
 
+/**
+ * @swagger
+ * /api/chat/all:
+ *   get:
+ *     summary: Ambil chat terakhir dari semua user yang pernah berkomunikasi (seperti daftar chat di WhatsApp)
+ *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar chat terakhir per user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatMessage'
+ *       401:
+ *         description: Unauthorized (token tidak valid)
+ *       500:
+ *         description: Gagal mengambil daftar chat
+ */
+router.get('/all', authenticate, chatController.getAllUserChats);
+
 module.exports = router;

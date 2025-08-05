@@ -74,7 +74,7 @@ router.get('/profile/me', userController.getProfile);
  *               items:
  *                 $ref: '#/components/schemas/User'
  */
-router.get('/', authorizeRole('admin'), userController.getAllUsers);
+router.get('/', userController.getAllUsers);
 
 /**
  * @swagger
