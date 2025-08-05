@@ -329,7 +329,6 @@ class ApiService {
     return this.request(`/seats/carriage/${carriageId}`);
   }
 
-  // ✅ Fix: Tambah booking endpoints yang ada di backend
   async getAvailableSeats(params) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(`/bookings/available-seats?${queryString}`);
@@ -342,7 +341,6 @@ class ApiService {
     });
   }
 
-  // ✅ Tambah endpoints yang masih missing:
   async getMyBookings() {
     return this.request('/bookings/mine');
   }
@@ -384,6 +382,7 @@ class ApiService {
 
   async searchTrainSchedules(params) {
     const queryString = new URLSearchParams(params).toString();
+    console.log("Generated query:", queryString);
     return this.request(`/bookings/schedules?${queryString}`);
   }
 
