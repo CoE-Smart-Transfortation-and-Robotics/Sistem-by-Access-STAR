@@ -251,3 +251,37 @@ exports.getUrgentChats = async (req, res) => {
     res.status(500).json({ error: 'Gagal mengambil urgent chats' });
   }
 };
+
+exports.getAllUserChats = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const snapshot = await db.collection('chats')
+      .where('project_id', '==', process.env.PROJECT_ID || 'default')
+      .where('participants', 'array-contains', userId)
+      .orderBy('timestamp', 'desc')
+      .get();
+
+    const chatMap = new Map();
+
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const otherUserId = data.sender_id === userId ? data.receiver_id : data.sender_id;
+
+      if (!chatMap.has(otherUserId)) {
+        chatMap.set(otherUserId, {
+          id: doc.id,
+          ...data,
+          is_urgent: data.urgency_analysis?.is_urgent ?? false
+        });
+      }
+    });
+
+    const recentChats = Array.from(chatMap.values());
+
+    return res.status(200).json(recentChats);
+  } catch (error) {
+    console.error('Get All User Chats Error:', error);
+    return res.status(500).json({ error: 'Gagal mengambil daftar chat' });
+  }
+};
