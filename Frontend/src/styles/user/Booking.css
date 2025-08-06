@@ -1607,3 +1607,28 @@ html, body {
   }
 
 }
+
+.card-eksekutif { border-left: 6px solid #1976d2; }
+.card-bisnis { border-left: 6px solid #43a047; }
+.card-ekonomi { border-left: 6px solid #fbc02d; }
+
+.seat-empty, .seat-placeholder {
+  width: 40px;
+  height: 40px;
+  margin: 2px;
+  visibility: hidden; /* biar slot tetap ada tapi tidak tampak */
+}
+
+.seat-aisle {
+  width: 20px; /* lebih kecil dari seat */
+  height: 40px;
+  margin: 2px;
+  background: transparent;
+}
+
+.seats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, auto); /* sekarang jadi 5 kolom: A B [lorong] C D */
+  gap: 4px;
+  justify-content: center;
+}

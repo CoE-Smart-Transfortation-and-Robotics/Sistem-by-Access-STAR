@@ -249,26 +249,55 @@ const BookingPage = () => {
       });
 
       const seatsData = response || [];
-      const formattedSeats = seatsData.map(seat => ({
+      
+      // Filter kursi berdasarkan kelas yang dipilih
+      const selectedClass = schedule.selected_class;
+      const filteredSeats = seatsData.filter(seat => seat.class === selectedClass);
+      
+      // Format dan urutkan kursi berdasarkan nomor
+      // Format dan urutkan kursi berdasarkan nomor dan huruf
+      const formattedSeats = filteredSeats.map(seat => ({
         seat_id: seat.seat_id,
         seat_number: seat.seat_number,
         carriage_id: seat.carriage_id,
         class: seat.class,
         isBooked: seat.is_booked
-      }));
+      })).sort((a, b) => {
+        // Parse nomor dan huruf terpisah
+        const aMatch = a.seat_number.match(/(\d+)([A-Z])/);
+        const bMatch = b.seat_number.match(/(\d+)([A-Z])/);
+        
+        if (!aMatch || !bMatch) return a.seat_number.localeCompare(b.seat_number);
+        
+        const aRow = parseInt(aMatch[1]);
+        const bRow = parseInt(bMatch[1]);
+        const aCol = aMatch[2];
+        const bCol = bMatch[2];
+        
+        // Urutkan berdasarkan baris dulu, kemudian kolom A, B, C, D
+        if (aRow !== bRow) return aRow - bRow;
+        return aCol.localeCompare(bCol);
+      });
+
 
       setAvailableSeats(formattedSeats);
       setCurrentStep(3);
     } catch (error) {
       setError("Failed to load available seats");
-      // Fallback sample seats
-      const sampleSeats = Array.from({ length: 20 }, (_, i) => ({
-        seat_id: i + 1,
-        seat_number: `${Math.ceil((i + 1) / 4)}${String.fromCharCode(65 + (i % 4))}`,
-        carriage_id: 1,
-        class: 'Economy',
-        isBooked: [2, 5, 8, 12, 15].includes(i + 1)
-      }));
+      // Fallback sample seats untuk kelas yang dipilih saja
+      const selectedClass = schedule.selected_class;
+      const sampleSeats = Array.from({ length: selectedClass === 'Eksekutif' ? 16 : 32 }, (_, i) => {
+        const seatNum = i + 1;
+        const row = Math.ceil(seatNum / 4);
+        const col = String.fromCharCode(65 + ((seatNum - 1) % 4));
+        return {
+          seat_id: seatNum,
+          seat_number: `${row}${col}`,
+          carriage_id: 1,
+          class: selectedClass,
+          isBooked: [2, 5, 8, 12, 15].includes(seatNum)
+        };
+      });
       setAvailableSeats(sampleSeats);
       setCurrentStep(3);
     } finally {
@@ -864,12 +893,14 @@ const BookingPage = () => {
 
           <div className="booking-card">
             <div className="card-header">
-              <h3>💺 Select Seats</h3>
+              <h3>💺 Select Seats - {selectedSchedule?.selected_class} Class</h3>
               <p>Choose {searchForm.passenger_count} seat{searchForm.passenger_count > 1 ? 's' : ''} for your journey</p>
               <button onClick={() => setCurrentStep(2)} className="btn btn-secondary">
                 ← Back to Trains
               </button>
             </div>
+
+            {/* Passenger Status */}
             <div className="passengers-status">
               {passengers.map((passenger, index) => (
                 <div key={index} className="passenger-status">
@@ -880,6 +911,8 @@ const BookingPage = () => {
                 </div>
               ))}
             </div>
+
+            {/* Passenger Selector */}
             <div className="passenger-selector">
               <h4>👤 Select Passenger to Assign Seat:</h4>
               <div className="passenger-buttons">
@@ -1110,52 +1143,90 @@ const BookingPage = () => {
               </div>
 
             <div className="seat-map">
-              <h4>💺 Seat Map</h4>
+              <h4>💺 Seat Map - {selectedSchedule?.selected_class} Class</h4>
               <div className="seat-legend">
-                <div className="legend-item">
-                  <div className="seat-demo available"></div>
-                  <span>Available</span>
-                </div>
-                <div className="legend-item">
-                  <div className="seat-demo selected"></div>
-                  <span>Your Selection</span>
-                </div>
-                <div className="legend-item">
-                  <div className="seat-demo assigned"></div>
-                  <span>Assigned to Others</span>
-                </div>
-                <div className="legend-item">
-                  <div className="seat-demo booked"></div>
-                  <span>Booked</span>
-                </div>
+                <div className="legend-item"><div className="seat-demo available"></div><span>Available</span></div>
+                <div className="legend-item"><div className="seat-demo selected"></div><span>Your Selection</span></div>
+                <div className="legend-item"><div className="seat-demo assigned"></div><span>Assigned to Others</span></div>
+                <div className="legend-item"><div className="seat-demo booked"></div><span>Booked</span></div>
               </div>
-              <div className="seats-grid">
-                {availableSeats.slice(0, 20).map((seat) => {
-                  const seatId = seat.seat_id;
-                  const isSelectedByCurrentPassenger = passengers[activePassengerIndex]?.seat_id === seatId;
-                  const isSelectedByOtherPassenger = passengers.some((p, pIndex) =>
-                    p.seat_id === seatId && pIndex !== activePassengerIndex
-                  );
-                  const isBooked = seat.isBooked;
-                  let seatClass = 'seat';
-                  if (isBooked) seatClass += ' booked';
-                  else if (isSelectedByCurrentPassenger) seatClass += ' selected';
-                  else if (isSelectedByOtherPassenger) seatClass += ' assigned';
-                  else seatClass += ' available';
-                  return (
-                    <button
-                      key={seatId}
-                      onClick={() => !isBooked && toggleSeatSelection(seat, activePassengerIndex)}
-                      disabled={isBooked || loading}
-                      className={seatClass}
-                      title={`Seat ${seat.seat_number} - ${seat.class}`}
-                    >
-                      {seat.seat_number}
-                    </button>
-                  );
-                })}
+
+              <div className="seat-class-section">
+                <h5 style={{ marginTop: 20, color: selectedSchedule?.selected_class === 'Eksekutif' ? '#1976d2' : '#fbc02d' }}>
+                  🚃 {selectedSchedule?.selected_class} Class - {availableSeats.length} Seats Available
+                </h5>
+                <div className="seats-grid">
+                  {(() => {
+                    // Buat grid berdasarkan class
+                    const isEksekutif = selectedSchedule?.selected_class === 'Eksekutif';
+                    const rows = isEksekutif ? 14 : 20; // Sesuaikan jumlah baris
+                    const cols = ['A', 'B', 'C', 'D'];
+                    
+                    const seatGrid = [];
+                    
+                    for (let row = 1; row <= rows; row++) {
+                      for (let col of cols) {
+                        const seatNumber = `${row}${col}`;
+                        
+                        // Cari seat data dari availableSeats
+                        const seatData = availableSeats.find(s => s.seat_number === seatNumber);
+                        
+                        // Skip kursi yang memang tidak ada (1D, 13A untuk eksekutif)
+                        if (isEksekutif && (seatNumber === '1D' || seatNumber === '13A')) {
+                          seatGrid.push(
+                            <div key={seatNumber} className="seat-empty"></div>
+                          );
+                          continue;
+                        }
+                        
+                        if (seatData) {
+                          // Seat ada - render normal
+                          const seatId = seatData.seat_id;
+                          const isSelectedByCurrentPassenger = passengers[activePassengerIndex]?.seat_id === seatId;
+                          const isSelectedByOtherPassenger = passengers.some((p, i) =>
+                            i !== activePassengerIndex && p.seat_id === seatId
+                          );
+                          const isBooked = seatData.isBooked;
+
+                          let seatClassName = 'seat';
+                          if (isBooked) seatClassName += ' booked';
+                          else if (isSelectedByCurrentPassenger) seatClassName += ' selected';
+                          else if (isSelectedByOtherPassenger) seatClassName += ' assigned';
+                          else seatClassName += ' available';
+
+                          seatGrid.push(
+                            <button
+                              key={seatId}
+                              onClick={() => !isBooked && toggleSeatSelection(seatData, activePassengerIndex)}
+                              disabled={isBooked || loading}
+                              className={seatClassName}
+                              title={`Seat ${seatData.seat_number} - ${seatData.class}`}
+                            >
+                              {seatData.seat_number}
+                            </button>
+                          );
+                        } else {
+                          // Seat tidak ada data - tampilkan placeholder kosong
+                          seatGrid.push(
+                            <div key={seatNumber} className="seat-placeholder"></div>
+                          );
+                        }
+                        
+                        // Kasih jarak antara kolom B dan C untuk lorong
+                        if (col === 'B') {
+                          seatGrid.push(
+                            <div key={`aisle-${row}`} className="seat-aisle"></div>
+                          );
+                        }
+                      }
+                    }
+                    
+                    return seatGrid;
+                  })()}
+                </div>
               </div>
             </div>
+
             <button
               onClick={proceedToPassengerDetails}
               disabled={passengers.filter(p => p.seat_id).length !== parseInt(searchForm.passenger_count)}
