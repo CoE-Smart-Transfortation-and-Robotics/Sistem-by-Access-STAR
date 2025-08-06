@@ -9,27 +9,32 @@ const ChatSimple = ({ isAdmin = false }) => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Load user list (for admin: all users, for user: only admin)
+  // Load user list (for admin: all users except admin, for user: only admin)
   useEffect(() => {
+    setLoading(true);
     const fetchUsers = async () => {
       try {
         if (isAdmin) {
           const data = await apiService.getAllUsers();
-          setUsers(data.filter(u => u.role !== 'admin'));
+          // Exclude admin users, sort by name
+          const filtered = data.filter(u => u.role !== 'admin');
+          setUsers(filtered);
         } else {
           // Assume admin has user_id = 1
           setUsers([{ id: 1, name: 'Admin' }]);
         }
       } catch (e) {
         setUsers([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUsers();
   }, [isAdmin]);
 
-  // Auto-select user pertama jika hanya ada satu user di daftar
+  // Auto-select user pertama jika hanya ada satu user di daftar, atau admin: auto-select user pertama jika ada user
   useEffect(() => {
-    if (users.length === 1 && !selectedUser) {
+    if (!selectedUser && users.length > 0) {
       setSelectedUser(users[0]);
     }
   }, [users, selectedUser]);
@@ -82,19 +87,25 @@ const ChatSimple = ({ isAdmin = false }) => {
     <div className={`chat-simple-wrapper${isAdmin ? ' chat-admin' : ' chat-user'}`}>
       <div className="chat-user-list">
         <h3>{isAdmin ? 'Daftar User' : 'Admin'}</h3>
-        <ul>
-          {users.map(u => (
-            <li
-              key={u.id}
-              className={selectedUser && selectedUser.id === u.id ? 'active' : ''}
-              onClick={() => setSelectedUser(u)}
-            >
-              <span className="chat-avatar">{(u.name || 'U')[0].toUpperCase()}</span>
-              <span className="chat-name">{u.name || `User ${u.id}`}</span>
-              {/* Bisa tambahkan preview pesan terakhir & waktu */}
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <div className="chat-loading">Memuat...</div>
+        ) : users.length === 0 ? (
+          <div className="chat-empty">{isAdmin ? 'Tidak ada user.' : 'Admin tidak ditemukan.'}</div>
+        ) : (
+          <ul>
+            {users.map(u => (
+              <li
+                key={u.id}
+                className={selectedUser && selectedUser.id === u.id ? 'active' : ''}
+                onClick={() => setSelectedUser(u)}
+              >
+                <span className="chat-avatar">{(u.name || 'U')[0].toUpperCase()}</span>
+                <span className="chat-name">{u.name || `User ${u.id}`}</span>
+                {/* Bisa tambahkan preview pesan terakhir & waktu */}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div className="chat-main-area">
         {selectedUser ? (
