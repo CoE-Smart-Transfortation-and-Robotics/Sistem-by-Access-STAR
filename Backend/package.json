@@ -29,6 +29,8 @@
     "firebase-admin": "^13.4.0",
     "hbs": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.0",
     "mysql2": "^3.14.1",
     "sequelize": "^6.37.7",
     "swagger-jsdoc": "^6.2.8",
