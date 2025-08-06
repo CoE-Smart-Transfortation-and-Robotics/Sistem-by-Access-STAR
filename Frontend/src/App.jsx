@@ -18,11 +18,13 @@ import TrainSchedulePage from './pages/admin/TrainSchedulePage';
 import StationManagementPage from './pages/admin/StationPage';
 
 // User Pages
+
 import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
 import BookingPage from './pages/user/BookingPage';
-import BookingHistoryPage from './pages/user/BookingHistoryPage';  // ✅ Import BookingPage
-import { Layout } from 'lucide-react';
+import BookingHistoryPage from './pages/user/BookingHistoryPage';
+import ChatPage from './pages/user/ChatPage';
+import AdminChatPage from './pages/admin/AdminChatPage';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -66,6 +68,16 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+
+      {/* User Chat Route */}
+      <Route
+        path="/chat"
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
       <Route 
         path="/profile" 
         element={
@@ -83,6 +95,16 @@ function AppRoutes() {
             <AdminDashboardPage />
           </ProtectedRoute>
         } 
+      />
+
+      {/* Admin Chat Route */}
+      <Route
+        path="/admin/chat"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminChatPage />
+          </ProtectedRoute>
+        }
       />
       <Route 
         path="/admin/users" 

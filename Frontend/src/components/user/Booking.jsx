@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../../services/api';
-
 import axios from 'axios';
-
 import '../../styles/user/Booking.css';
 
 const BookingPage = () => {
@@ -11,15 +9,12 @@ const BookingPage = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [trainCategories, setTrainCategories] = useState([]);
+  
   const [searchForm, setSearchForm] = useState({
     origin_station: '',
     destination_station: '',
     travel_date: '',
-    passenger_count: 1,
-    train_category: '',
+    passenger_count: 1
   });
 
   const [stations, setStations] = useState([]);
@@ -27,7 +22,6 @@ const BookingPage = () => {
   const [allSchedules, setAllSchedules] = useState([]);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [availableSeats, setAvailableSeats] = useState([]);
-
   const [selectedSeats, setSelectedSeats] = useState([]);
 
   // Filter state
@@ -40,9 +34,8 @@ const BookingPage = () => {
   });
 
   // Multiple passengers data
-
   const [passengers, setPassengers] = useState([]);
-  const [activePassengerIndex, setActivePassengerIndex] = useState(0);
+  const [activePassengerIndex, setActivePassengerIndex] = useState(null);
 
   useEffect(() => {
     fetchStations();
@@ -89,6 +82,7 @@ const BookingPage = () => {
   };
 
   useEffect(() => {
+    // Initialize passengers array when passenger count changes
     const passengerCount = parseInt(searchForm.passenger_count);
     const newPassengers = Array.from({ length: passengerCount }, (_, index) => ({
       name: '',
@@ -96,34 +90,21 @@ const BookingPage = () => {
       seat_id: null
     }));
     setPassengers(newPassengers);
-    setActivePassengerIndex(0);
+    setActivePassengerIndex(0); // Set default to first passenger
   }, [searchForm.passenger_count]);
-
-  useEffect(() => {
-    apiService.getAllTrainCategories()
-      .then(res => {
-        const categories = Array.isArray(res) ? res : res?.data || [];
-        setTrainCategories(categories);
-      })
-      .catch(() => setTrainCategories([]));
-  }, []);
 
   const fetchStations = async () => {
     try {
-      setLoading(true);
       const data = await apiService.getAllStations();
       setStations(data || []);
     } catch (error) {
-      setError('Failed to load stations');
-    } finally {
-      setLoading(false);
+      console.error('Error fetching stations:', error);
     }
   };
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchForm(prev => ({ ...prev, [name]: value }));
-    setError(null);
   };
 
   const handleFilterChange = (e) => {
@@ -174,15 +155,41 @@ const BookingPage = () => {
   };
 
   const handlePassengerChange = (index, field, value) => {
-    setPassengers(prev => prev.map((passenger, i) =>
+    setPassengers(prev => prev.map((passenger, i) => 
       i === index ? { ...passenger, [field]: value } : passenger
     ));
   };
 
   const searchTrains = async (e) => {
-    e.preventDefault();
-    const { travel_date, origin_station, destination_station } = searchForm;
+  e.preventDefault();
 
+  const {
+    travel_date,
+    origin_station,
+    destination_station
+  } = searchForm;
+
+  console.log("📦 Input Form Data:", searchForm);
+
+  // Validasi form
+  if (!travel_date || !origin_station || !destination_station) {
+    alert("Semua field harus diisi sebelum mencari jadwal kereta.");
+    return;
+  }
+
+  const params = {
+    schedule_date: travel_date,
+    origin_station_id: parseInt(origin_station),
+    destination_station_id: parseInt(destination_station),
+    train_category: 1 // Hanya 1 kategori untuk sekarang
+  };
+
+  console.log("🚀 Query Params to API:", params);
+
+  setLoading(true);
+
+  try {
+    const response = await apiService.searchTrainSchedules(params);
 
     // Validasi isi respons
     const schedules = response?.data;
@@ -194,110 +201,77 @@ const BookingPage = () => {
     } else {
       console.warn("⚠️ Tidak ada jadwal ditemukan atau response kosong.");
       alert("Tidak ada jadwal tersedia untuk rute dan tanggal yang dipilih.");
-
-    if (!travel_date || !origin_station || !destination_station) {
-      setError("Please fill in all required fields (origin, destination, date)");
-      return;
-    }
-    if (origin_station === destination_station) {
-      setError("Origin and destination must be different");
-      return;
-
     }
 
-    const params = {
-      schedule_date: searchForm.travel_date,
-      origin_station_id: parseInt(searchForm.origin_station),
-      destination_station_id: parseInt(searchForm.destination_station),
-      train_category: searchForm.train_category ? parseInt(searchForm.train_category) : undefined,
-    };
+  } catch (error) {
+    console.error("❌ Gagal mengambil data jadwal:", error);
+    alert(error?.response?.data?.message || "Terjadi kesalahan saat mencari jadwal kereta.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setLoading(true);
-    setError(null);
 
-    try {
-      const response = await apiService.searchTrainSchedules(params);
-      const schedules = response?.data || [];
-      if (schedules.length > 0) {
-        setAvailableSchedules(schedules);
-        setCurrentStep(2);
-      } else {
-        setError("No trains found for your criteria");
-        setAvailableSchedules([]);
-      }
-    } catch (error) {
-      setError(error?.message || "Failed to search trains");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const selectSchedule = async (schedule) => {
+    // 🔍 DEBUG: Log the actual schedule structure
+    console.log('🔍 Full schedule object:', schedule);
+    console.log('🔍 schedule.train_id:', schedule.train_id);
+    console.log('🔍 schedule.train:', schedule.train);
+    console.log('🔍 schedule.timing:', schedule.timing);
+    console.log('🔍 schedule.schedule_date:', schedule.schedule_date);
+    
     setSelectedSchedule(schedule);
     setLoading(true);
-    setError(null);
-
+    
     try {
-      const trainId = schedule.train?.train_id || schedule.train_id;
-      const scheduleDate = schedule.timing?.schedule_date || schedule.schedule_date;
+      console.log('Selected schedule:', schedule);
 
-      const response = await apiService.getAvailableSeats({
-        train_id: trainId,
-        schedule_date: scheduleDate,
-        origin_station_id: searchForm.origin_station,
-        destination_station_id: searchForm.destination_station
+      // ✅ Fix: Include all required parameters
+      const availableSeatsResponse = await axios.get(`http://localhost:9000/api/bookings/available-seats`, {
+        params: {
+          // 🔧 Try different property access patterns
+          train_id: schedule.train_id || schedule.train?.train_id,
+          schedule_date: schedule.schedule_date || schedule.timing?.schedule_date,
+          origin_station_id: searchForm.origin_station,
+          destination_station_id: searchForm.destination_station
+        }
       });
 
-      const seatsData = response || [];
+      console.log('Available seats response:', availableSeatsResponse.data);
+
+      // Langsung gunakan data dari response karena sudah include is_booked
+      const seatsData = availableSeatsResponse.data || [];
       
-      // Filter kursi berdasarkan kelas yang dipilih
-      const selectedClass = schedule.selected_class;
-      const filteredSeats = seatsData.filter(seat => seat.class === selectedClass);
-      
-      // Format dan urutkan kursi berdasarkan nomor
-      // Format dan urutkan kursi berdasarkan nomor dan huruf
-      const formattedSeats = filteredSeats.map(seat => ({
+      // Map data sesuai format yang dibutuhkan frontend
+      const formattedSeats = seatsData.map(seat => ({
         seat_id: seat.seat_id,
         seat_number: seat.seat_number,
         carriage_id: seat.carriage_id,
         class: seat.class,
-        isBooked: seat.is_booked
-      })).sort((a, b) => {
-        // Parse nomor dan huruf terpisah
-        const aMatch = a.seat_number.match(/(\d+)([A-Z])/);
-        const bMatch = b.seat_number.match(/(\d+)([A-Z])/);
-        
-        if (!aMatch || !bMatch) return a.seat_number.localeCompare(b.seat_number);
-        
-        const aRow = parseInt(aMatch[1]);
-        const bRow = parseInt(bMatch[1]);
-        const aCol = aMatch[2];
-        const bCol = bMatch[2];
-        
-        // Urutkan berdasarkan baris dulu, kemudian kolom A, B, C, D
-        if (aRow !== bRow) return aRow - bRow;
-        return aCol.localeCompare(bCol);
-      });
+        isBooked: seat.is_booked // Gunakan is_booked dari API response
+      }));
 
+      console.log('Formatted seats with booking status:', formattedSeats);
 
       setAvailableSeats(formattedSeats);
       setCurrentStep(3);
+
     } catch (error) {
-      setError("Failed to load available seats");
-      // Fallback sample seats untuk kelas yang dipilih saja
-      const selectedClass = schedule.selected_class;
-      const sampleSeats = Array.from({ length: selectedClass === 'Eksekutif' ? 16 : 32 }, (_, i) => {
-        const seatNum = i + 1;
-        const row = Math.ceil(seatNum / 4);
-        const col = String.fromCharCode(65 + ((seatNum - 1) % 4));
-        return {
-          seat_id: seatNum,
-          seat_number: `${row}${col}`,
+      console.error('Error fetching available seats:', error);
+
+      // Fallback ke sample data jika API gagal
+      const sampleSeats = [];
+      for (let i = 1; i <= 20; i++) {
+        sampleSeats.push({
+          seat_id: i,
+          seat_number: `${Math.ceil(i / 4)}${String.fromCharCode(65 + ((i - 1) % 4))}`,
           carriage_id: 1,
-          class: selectedClass,
-          isBooked: [2, 5, 8, 12, 15].includes(seatNum)
-        };
-      });
+          class: 'Economy',
+          isBooked: [2, 5, 8, 12, 15].includes(i)
+        });
+      }
+
       setAvailableSeats(sampleSeats);
       setCurrentStep(3);
     } finally {
@@ -307,14 +281,24 @@ const BookingPage = () => {
 
   const toggleSeatSelection = (seat, passengerIndex) => {
     if (seat.isBooked) return;
-    const seatId = seat.seat_id;
+
+    // Use seat.seat_id instead of seat.id
+    const seatId = seat.seat_id ?? seat.id;
+
     setPassengers(prev => prev.map((passenger, i) => {
+      // Clear seat from ALL passengers first if seat is being selected
       if (passenger.seat_id === seatId) {
         return { ...passenger, seat_id: null };
       }
+      
+      // Only assign seat to the specific selected passenger
       if (i === passengerIndex) {
-        return { ...passenger, seat_id: passenger.seat_id === seatId ? null : seatId };
+        return { 
+          ...passenger, 
+          seat_id: passenger.seat_id === seatId ? null : seatId
+        };
       }
+      
       return passenger;
     }));
   };
@@ -322,48 +306,105 @@ const BookingPage = () => {
   const proceedToPassengerDetails = () => {
     const selectedSeatCount = passengers.filter(p => p.seat_id).length;
     if (selectedSeatCount !== parseInt(searchForm.passenger_count)) {
-      setError(`Please select exactly ${searchForm.passenger_count} seat(s)`);
+      alert(`Please select exactly ${searchForm.passenger_count} seat(s)`);
       return;
     }
-    setError(null);
     setCurrentStep(4);
   };
 
   const submitBooking = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
-      if (!selectedSchedule) throw new Error("Schedule not selected");
-      const trainId = selectedSchedule.train?.train_id || selectedSchedule.train_id;
-      const scheduleDate = selectedSchedule.timing?.schedule_date || selectedSchedule.schedule_date;
-      if (!trainId || !scheduleDate) throw new Error("Invalid schedule data");
+      // ✅ Debug: Log selectedSchedule structure
+      console.log('🔍 selectedSchedule in submitBooking:', selectedSchedule);
 
-      for (let i = 0; i < passengers.length; i++) {
-        const passenger = passengers[i];
-        if (!passenger.name.trim()) throw new Error(`Please enter name for Passenger ${i + 1}`);
-        if (!passenger.nik || passenger.nik.length !== 16) throw new Error(`Please enter valid 16-digit NIK for Passenger ${i + 1}`);
-        if (!passenger.seat_id) throw new Error(`Please select seat for Passenger ${i + 1}`);
+      if (!selectedSchedule) {
+        alert("Schedule belum dipilih dengan benar.");
+        return;
+      }
+
+      // ✅ Fix: Use same property access pattern as selectSchedule
+      const trainId = selectedSchedule.train_id || selectedSchedule.train?.train_id;
+      const scheduleDate = selectedSchedule.schedule_date || selectedSchedule.timing?.schedule_date;
+
+      if (!trainId || !scheduleDate) {
+        alert("Schedule data tidak lengkap. train_id atau schedule_date tidak ditemukan.");
+        console.error('Missing data:', { trainId, scheduleDate, selectedSchedule });
+        return;
+      }
+
+      const originId = Number(searchForm.origin_station);
+      const destinationId = Number(searchForm.destination_station);
+
+      if (!originId || !destinationId) {
+        alert("Stasiun asal dan tujuan wajib dipilih.");
+        return;
+      }
+
+      if (passengers.length === 0) {
+        alert("Penumpang belum ditambahkan.");
+        return;
       }
 
       const bookingPayload = {
-        train_id: trainId,
-        schedule_date: scheduleDate,
-        origin_station_id: Number(searchForm.origin_station),
-        destination_station_id: Number(searchForm.destination_station),
-        passengers: passengers.map(p => ({
+        train_id: trainId,              // ✅ Use extracted trainId
+        schedule_date: scheduleDate,    // ✅ Use extracted scheduleDate
+        origin_station_id: originId,
+        destination_station_id: destinationId,
+        passengers: passengers.map((p) => ({
           seat_id: p.seat_id,
-          name: p.name.trim(),
+          name: p.name,
           nik: p.nik,
         })),
       };
 
+      console.log("FINAL PAYLOAD:", bookingPayload);
+
       const response = await apiService.createBooking(bookingPayload);
-      alert(`Booking created successfully! Booking ID: ${response.data?.booking_id || 'N/A'}`);
-      navigate('/bookinghistory');
+
+      if (response && response.message) {
+        alert(`${response.message} - Booking ID: ${response.data.booking_id}`);
+      } else {
+        alert("Booking created successfully!");
+      }
+
+      resetBooking();
     } catch (error) {
-      setError(error.message || "Failed to create booking");
+      console.error("Booking error:", error);
+      alert("Booking gagal. Cek console.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tambah fungsi untuk melihat booking user
+  const viewMyBookings = async () => {
+    try {
+      setLoading(true);
+      const myBookings = await apiService.getMyBookings();
+      console.log('My bookings:', myBookings);
+      // Bisa redirect ke halaman booking history atau show modal
+      alert(`You have ${myBookings.length} booking(s). Check console for details.`);
+    } catch (error) {
+      console.error('Error fetching my bookings:', error);
+      alert('Error loading your bookings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tambah fungsi untuk cancel booking
+  const cancelBooking = async (bookingId) => {
+    try {
+      setLoading(true);
+      await apiService.cancelBooking(bookingId);
+      alert('Booking cancelled successfully!');
+      // Refresh booking list jika ada
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Error cancelling booking.');
     } finally {
       setLoading(false);
     }
@@ -375,8 +416,8 @@ const BookingPage = () => {
     setAvailableSchedules([]);
     setAllSchedules([]);
     setAvailableSeats([]);
+    setSelectedSeats([]);
     setPassengers([]);
-
     setFilters({
       sortBy: 'departure_time',
       trainClass: '',
@@ -384,15 +425,11 @@ const BookingPage = () => {
       maxPrice: '',
       departureTime: ''
     });
-
-    setError(null);
-
     setSearchForm({
       origin_station: '',
       destination_station: '',
       travel_date: '',
-      passenger_count: 1,
-      train_category: ''
+      passenger_count: 1
     });
   };
 
@@ -402,7 +439,8 @@ const BookingPage = () => {
   };
 
   const getSeatInfo = (seatId) => {
-    return availableSeats.find(s => s.seat_id === seatId) || null;
+    const seat = availableSeats.find(s => s.seat_id === seatId);
+    return seat || null;
   };
 
   return (
@@ -586,228 +624,6 @@ const BookingPage = () => {
                     <option value="departure_time">Waktu Keberangkatan</option>
                     <option value="arrival_time">Waktu Kedatangan</option>
                   </select>
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  if (loading && currentStep === 1) {
-    return (
-      <div className="booking-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading booking system...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="booking-page">
-      <div className="booking-container">
-        <div className="booking-header">
-          <h1>🚂 Train Booking System</h1>
-          <p>Book your train journey in simple steps</p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="booking-progress">
-          <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-            <div className="step-number">1</div>
-            <span>Search</span>
-          </div>
-          <div className={`step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
-            <div className="step-number">2</div>
-            <span>Select Train</span>
-          </div>
-          <div className={`step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}`}>
-            <div className="step-number">3</div>
-            <span>Choose Seats</span>
-          </div>
-          <div className={`step ${currentStep >= 4 ? 'active' : ''}`}>
-            <div className="step-number">4</div>
-            <span>Passenger Info</span>
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="error-banner">
-            <span className="error-icon">⚠️</span>
-            <span>{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
-          </div>
-        )}
-
-        {/* Step 1: Search Form */}
-        {currentStep === 1 && (
-          <div className="booking-card">
-            <div className="card-header">
-              <h3>🔍 Search Trains</h3>
-              <p>Find available trains for your journey</p>
-            </div>
-            <form onSubmit={searchTrains} className="search-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>📍 From</label>
-                  <select
-                    name="origin_station"
-                    value={searchForm.origin_station}
-                    onChange={handleSearchChange}
-                    required
-                    className="form-select"
-                  >
-                    <option value="">Select Origin Station</option>
-                    {stations.map(station => (
-                      <option key={station.id} value={station.id}>
-                        {station.station_name} ({station.station_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>🏁 To</label>
-                  <select
-                    name="destination_station"
-                    value={searchForm.destination_station}
-                    onChange={handleSearchChange}
-                    required
-                    className="form-select"
-                  >
-                    <option value="">Select Destination Station</option>
-                    {stations.map(station => (
-                      <option key={station.id} value={station.id}>
-                        {station.station_name} ({station.station_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>📅 Travel Date</label>
-                  <input
-                    type="date"
-                    name="travel_date"
-                    value={searchForm.travel_date}
-                    onChange={handleSearchChange}
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>👥 Passengers</label>
-                  <select
-                    name="passenger_count"
-                    value={searchForm.passenger_count}
-                    onChange={handleSearchChange}
-                    className="form-select"
-                  >
-                    {[1,2,3,4,5,6].map(num => (
-                      <option key={num} value={num}>{num} Passenger{num > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>🚆 Train Category</label>
-                  <select
-                    name="train_category"
-                    value={searchForm.train_category}
-                    onChange={handleSearchChange}
-                    className="form-select"
-                  >
-                    <option value="">All Categories</option>
-                    {trainCategories.map(cat => (
-                      <option key={cat.train_category_id || cat.id} value={cat.train_category_id || cat.id}>
-                        {cat.category_name || cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <button type="submit" disabled={loading} className="btn btn-primary">
-                {loading ? (
-                  <>
-                    <div className="btn-spinner"></div>
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    🔍 Search Trains
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Step 2: Train Selection */}
-        {currentStep === 2 && (
-          <div className="booking-card">
-            <div className="card-header">
-              <h3>🚂 Available Trains</h3>
-              <p>
-                {getStationName(searchForm.origin_station)} → {getStationName(searchForm.destination_station)}
-                | {formatDate(searchForm.travel_date)}
-              </p>
-              <button onClick={() => setCurrentStep(1)} className="btn btn-secondary">
-                ← Back to Search
-              </button>
-            </div>
-            <div className="trains-list">
-              {availableSchedules.map(schedule => (
-                <div key={schedule.schedule_id} className="train-card">
-                  <div className="train-info">
-                    <h4>
-                      🚂 {schedule.train?.train_name || schedule.train_name} ({schedule.train?.train_code || schedule.train_code})
-                    </h4>
-                    <p className="train-category">
-                      <b>Category:</b> {schedule.train?.category || schedule.category}
-                    </p>
-                    <p className="train-date">
-                      <b>Date:</b> {formatDate(schedule.timing?.schedule_date || schedule.schedule_date)}
-                    </p>
-                    <div className="train-route">
-                      <span>{schedule.route?.origin_station || getStationName(searchForm.origin_station)}</span>
-                      <span className="route-arrow">→</span>
-                      <span>{schedule.route?.destination_station || getStationName(searchForm.destination_station)}</span>
-                    </div>
-                    <div className="train-time">
-                      <span><b>Departure:</b> {schedule.timing?.departure_time}</span>
-                      <span style={{ marginLeft: '1rem' }}><b>Arrival:</b> {schedule.timing?.arrival_time}</span>
-                    </div>
-                    <div className="train-classes">
-                      <b>Seat Classes:</b>
-                      {schedule.seat_classes && Object.entries(schedule.seat_classes).map(([cls, qty]) => (
-                        <span key={cls} style={{ marginLeft: '0.5rem' }}>
-                          {cls}: {qty} seat(s)
-                        </span>
-                      ))}
-                    </div>
-                    <div className="train-pricing">
-                      <b>Pricing:</b>
-                      {schedule.pricing && Object.entries(schedule.pricing).map(([cls, price]) => (
-                        <span key={cls} style={{ marginLeft: '0.5rem' }}>
-                          {cls}: Rp{price.toLocaleString()}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => selectSchedule(schedule)}
-                    disabled={loading}
-                    className="btn btn-success"
-                  >
-                    {loading ? 'Loading...' : 'Select Train'}
-                  </button>
-
                 </div>
                 
                 <div className="filter-field">
@@ -821,7 +637,6 @@ const BookingPage = () => {
                 </div>
               </div>
             </div>
-
 
             {availableSchedules.length === 0 ? (
               <div className="no-results">
@@ -875,13 +690,11 @@ const BookingPage = () => {
                 ))}
               </div>
             )}
-
           </div>
         )}
 
         {/* Step 3: Seat Selection */}
         {currentStep === 3 && (
-
           <div className="step-container">
             <div className="step-header">
               <div>
@@ -890,54 +703,12 @@ const BookingPage = () => {
                   Pilih Kursi untuk {searchForm.passenger_count} Penumpang
                 </h2>
                 <p className="step-subtitle">Pilih kursi yang nyaman untuk perjalanan Anda</p>
-
-          <div className="booking-card">
-            <div className="card-header">
-              <h3>💺 Select Seats - {selectedSchedule?.selected_class} Class</h3>
-              <p>Choose {searchForm.passenger_count} seat{searchForm.passenger_count > 1 ? 's' : ''} for your journey</p>
-              <button onClick={() => setCurrentStep(2)} className="btn btn-secondary">
-                ← Back to Trains
-              </button>
-            </div>
-
-            {/* Passenger Status */}
-            <div className="passengers-status">
-              {passengers.map((passenger, index) => (
-                <div key={index} className="passenger-status">
-                  <span className="passenger-label">Passenger {index + 1}</span>
-                  <span className="seat-status">
-                    {passenger.seat_id ? `💺 ${getSeatInfo(passenger.seat_id)?.seat_number}` : '❌ No seat'}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Passenger Selector */}
-            <div className="passenger-selector">
-              <h4>👤 Select Passenger to Assign Seat:</h4>
-              <div className="passenger-buttons">
-                {passengers.map((passenger, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setActivePassengerIndex(index)}
-                    className={`passenger-btn ${activePassengerIndex === index ? 'active' : ''}`}
-                  >
-                    <span>Passenger {index + 1}</span>
-                    {passenger.seat_id && (
-                      <span className="assigned-seat">
-                        {getSeatInfo(passenger.seat_id)?.seat_number}
-                      </span>
-                    )}
-                  </button>
-                ))}
               </div>
               <button onClick={() => setCurrentStep(2)} className="back-btn">
                 <span>←</span>
                 Kembali
               </button>
             </div>
-
 
             <div className="seat-selection-container">
               {/* Passengers Overview */}
@@ -1141,165 +912,6 @@ const BookingPage = () => {
                   )}
                 </button>
               </div>
-
-            <div className="seat-map">
-              <h4>💺 Seat Map - {selectedSchedule?.selected_class} Class</h4>
-              <div className="seat-legend">
-                <div className="legend-item"><div className="seat-demo available"></div><span>Available</span></div>
-                <div className="legend-item"><div className="seat-demo selected"></div><span>Your Selection</span></div>
-                <div className="legend-item"><div className="seat-demo assigned"></div><span>Assigned to Others</span></div>
-                <div className="legend-item"><div className="seat-demo booked"></div><span>Booked</span></div>
-              </div>
-
-              <div className="seat-class-section">
-                <h5 style={{ marginTop: 20, color: selectedSchedule?.selected_class === 'Eksekutif' ? '#1976d2' : '#fbc02d' }}>
-                  🚃 {selectedSchedule?.selected_class} Class - {availableSeats.length} Seats Available
-                </h5>
-                <div className="seats-grid">
-                  {(() => {
-                    // Buat grid berdasarkan class
-                    const isEksekutif = selectedSchedule?.selected_class === 'Eksekutif';
-                    const rows = isEksekutif ? 14 : 20; // Sesuaikan jumlah baris
-                    const cols = ['A', 'B', 'C', 'D'];
-                    
-                    const seatGrid = [];
-                    
-                    for (let row = 1; row <= rows; row++) {
-                      for (let col of cols) {
-                        const seatNumber = `${row}${col}`;
-                        
-                        // Cari seat data dari availableSeats
-                        const seatData = availableSeats.find(s => s.seat_number === seatNumber);
-                        
-                        // Skip kursi yang memang tidak ada (1D, 13A untuk eksekutif)
-                        if (isEksekutif && (seatNumber === '1D' || seatNumber === '13A')) {
-                          seatGrid.push(
-                            <div key={seatNumber} className="seat-empty"></div>
-                          );
-                          continue;
-                        }
-                        
-                        if (seatData) {
-                          // Seat ada - render normal
-                          const seatId = seatData.seat_id;
-                          const isSelectedByCurrentPassenger = passengers[activePassengerIndex]?.seat_id === seatId;
-                          const isSelectedByOtherPassenger = passengers.some((p, i) =>
-                            i !== activePassengerIndex && p.seat_id === seatId
-                          );
-                          const isBooked = seatData.isBooked;
-
-                          let seatClassName = 'seat';
-                          if (isBooked) seatClassName += ' booked';
-                          else if (isSelectedByCurrentPassenger) seatClassName += ' selected';
-                          else if (isSelectedByOtherPassenger) seatClassName += ' assigned';
-                          else seatClassName += ' available';
-
-                          seatGrid.push(
-                            <button
-                              key={seatId}
-                              onClick={() => !isBooked && toggleSeatSelection(seatData, activePassengerIndex)}
-                              disabled={isBooked || loading}
-                              className={seatClassName}
-                              title={`Seat ${seatData.seat_number} - ${seatData.class}`}
-                            >
-                              {seatData.seat_number}
-                            </button>
-                          );
-                        } else {
-                          // Seat tidak ada data - tampilkan placeholder kosong
-                          seatGrid.push(
-                            <div key={seatNumber} className="seat-placeholder"></div>
-                          );
-                        }
-                        
-                        // Kasih jarak antara kolom B dan C untuk lorong
-                        if (col === 'B') {
-                          seatGrid.push(
-                            <div key={`aisle-${row}`} className="seat-aisle"></div>
-                          );
-                        }
-                      }
-                    }
-                    
-                    return seatGrid;
-                  })()}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={proceedToPassengerDetails}
-              disabled={passengers.filter(p => p.seat_id).length !== parseInt(searchForm.passenger_count)}
-              className="btn btn-primary"
-            >
-              Continue to Passenger Details →
-            </button>
-          </div>
-        )}
-
-        {/* Step 4: Passenger Details */}
-        {currentStep === 4 && (
-          <div className="booking-card">
-            <div className="card-header">
-              <h3>👤 Passenger Information</h3>
-              <p>Enter details for all passengers</p>
-              <button onClick={() => setCurrentStep(3)} className="btn btn-secondary">
-                ← Back to Seat Selection
-              </button>
-            </div>
-            <form onSubmit={submitBooking} className="passenger-form">
-              {passengers.map((passenger, index) => (
-                <div key={index} className="passenger-details">
-                  <div className="passenger-header">
-                    <h4>Passenger {index + 1}</h4>
-                    <span className="seat-info">
-                      💺 Seat {getSeatInfo(passenger.seat_id)?.seat_number}
-                    </span>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Full Name *</label>
-                      <input
-                        type="text"
-                        value={passenger.name}
-                        onChange={(e) => handlePassengerChange(index, 'name', e.target.value)}
-                        required
-                        className="form-input"
-                        placeholder="Enter full name as in ID"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>NIK (Identity Number) *</label>
-                      <input
-                        type="text"
-                        value={passenger.nik}
-                        onChange={(e) => handlePassengerChange(index, 'nik', e.target.value)}
-                        required
-                        maxLength="16"
-                        pattern="[0-9]{16}"
-                        className="form-input"
-                        placeholder="16-digit NIK number"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="form-actions">
-                <button type="button" onClick={resetBooking} className="btn btn-secondary">
-                  🔄 Start Over
-                </button>
-                <button type="submit" disabled={loading} className="btn btn-success">
-                  {loading ? (
-                    <>
-                      <div className="btn-spinner"></div>
-                      Creating Booking...
-                    </>
-                  ) : (
-                    '✅ Confirm Booking'
-                  )}
-                </button>
-              </div>
-
             </form>
           </div>
         )}

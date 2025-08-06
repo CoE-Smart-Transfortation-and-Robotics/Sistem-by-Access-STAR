@@ -386,6 +386,26 @@ class ApiService {
     return this.request(`/bookings/schedules?${queryString}`);
   }
 
+  // ================= CHAT ENDPOINTS =================
+
+  // Kirim pesan chat
+  async sendChatMessage({ receiver_id, message }) {
+    return this.request('/chat', {
+      method: 'POST',
+      body: { receiver_id, message },
+    });
+  }
+
+  // Ambil chat dengan user tertentu
+  async getChatWithUser(with_user_id) {
+    return this.request(`/chat?with_user_id=${with_user_id}`);
+  }
+
+  // Ambil daftar chat mendesak (urgent)
+  async getUrgentChats() {
+    return this.request('/chat/urgent');
+  }
+
   
 }
 
