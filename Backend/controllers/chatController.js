@@ -1,5 +1,7 @@
-const db = require('../firebase');
+const mongoose = require('../mongo');
 const { User } = require('../models');
+const Chat = require('../models/Chat');
+const UrgentChat = require('../models/UrgentChat');
 const { GoogleGenAI } = require("@google/genai");
 require('dotenv').config();
 
@@ -95,17 +97,11 @@ async function analyzeUrgency(message, senderRole, receiverRole) {
   }
 }
 
-function sanitize(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
 exports.sendChat = async (req, res) => {
   const senderId = req.user.id;
   const { receiver_id, message } = req.body;
 
-  if (!receiver_id || !message) {
-    return res.status(400).json({ error: 'receiver_id dan message wajib diisi' });
-  }
+  if (!receiver_id || !message) return res.status(400).json({ error: 'receiver_id dan message wajib diisi' });
 
   try {
     const [sender, receiver] = await Promise.all([
@@ -113,18 +109,19 @@ exports.sendChat = async (req, res) => {
       User.findByPk(receiver_id)
     ]);
 
-    if (!receiver) return res.status(404).json({ error: 'Penerima tidak ditemukan' });
-    if (!sender) return res.status(404).json({ error: 'Pengirim tidak ditemukan' });
+    if (!sender || !receiver) return res.status(404).json({ error: 'User tidak ditemukan' });
 
-    const sortedParticipants = [senderId, parseInt(receiver_id)].sort((a, b) => a - b);
+    const participants = [senderId, parseInt(receiver_id)].sort((a, b) => a - b);
 
-    const rawChat = {
+    const chatDoc = await Chat.create({
       project_id: process.env.PROJECT_ID || 'default',
       sender_id: senderId,
       receiver_id: parseInt(receiver_id),
       message,
       timestamp: new Date(),
-      participants: sortedParticipants,
+      participants,
+      sender_role: sender.role,
+      receiver_role: receiver.role,
       urgency_analysis: {
         is_urgent: false,
         confidence: 0.0,
@@ -132,13 +129,8 @@ exports.sendChat = async (req, res) => {
         reason: 'Analysis not yet completed',
         analyzed_at: null
       },
-      priority_level: null,
-      sender_role: sender.role,
-      receiver_role: receiver.role
-    };
-
-    const chat = sanitize(rawChat);
-    const docRef = await db.collection('chats').add(chat);
+      priority_level: null
+    });
 
     analyzeUrgency(message, sender.role, receiver.role).then(async (urgencyAnalysis) => {
       let priorityLevel = null;
@@ -163,12 +155,12 @@ exports.sendChat = async (req, res) => {
         priority_level: priorityLevel
       };
 
-      await db.collection('chats').doc(docRef.id).update(updateData);
+      await Chat.findByIdAndUpdate(chatDoc._id, updateData);
 
       if (urgencyAnalysis.isUrgent && urgencyAnalysis.confidence > 0.7) {
-        await db.collection('urgent_chats').add({
-          chat_id: docRef.id,
-          ...chat,
+        await UrgentChat.create({
+          chat_id: chatDoc._id,
+          ...chatDoc.toObject(),
           ...updateData
         });
 
@@ -180,11 +172,11 @@ exports.sendChat = async (req, res) => {
 
     return res.status(201).json({
       message: 'Chat berhasil dikirim (analisis menyusul)',
-      chat_id: docRef.id
+      chat_id: chatDoc._id
     });
 
-  } catch (error) {
-    console.error('Send Chat Error:', error);
+  } catch (err) {
+    console.error('Send Chat Error:', err);
     res.status(500).json({ error: 'Gagal mengirim chat' });
   }
 };
@@ -193,29 +185,23 @@ exports.getChats = async (req, res) => {
   const userId = req.user.id;
   const { with_user_id } = req.query;
 
-  if (!with_user_id) {
-    return res.status(400).json({ error: 'with_user_id wajib diisi' });
-  }
+  if (!with_user_id) return res.status(400).json({ error: 'with_user_id wajib diisi' });
+
+  const participants = [userId, parseInt(with_user_id)].sort((a, b) => a - b);
 
   try {
-    const sortedParticipants = [userId, parseInt(with_user_id)].sort((a, b) => a - b);
+    const chats = await Chat.find({
+      project_id: process.env.PROJECT_ID || 'default',
+      participants
+    }).sort('timestamp');
 
-    const snapshot = await db.collection('chats')
-      .where('project_id', '==', process.env.PROJECT_ID || 'default')
-      .where('participants', '==', sortedParticipants)
-      .orderBy('timestamp')
-      .get();
+    const messages = chats.map(chat => ({
+      id: chat._id,
+      ...chat.toObject(),
+      is_urgent: chat.urgency_analysis?.is_urgent ?? false
+    }));
 
-    const messages = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        is_urgent: data.urgency_analysis?.is_urgent ?? false
-      };
-    });
-
-    return res.status(200).json(messages);
+    res.status(200).json(messages);
   } catch (err) {
     console.error('Get Chats Error:', err);
     res.status(500).json({ error: 'Gagal mengambil chat' });
@@ -223,31 +209,22 @@ exports.getChats = async (req, res) => {
 };
 
 exports.getUrgentChats = async (req, res) => {
-  const userRole = req.user.role;
-
-  if (userRole !== 'admin') {
-    return res.status(403).json({ error: 'Akses ditolak' });
-  }
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Akses ditolak' });
 
   try {
-    const snapshot = await db.collection('urgent_chats')
-      .where('project_id', '==', process.env.PROJECT_ID || 'default')
-      .orderBy('timestamp', 'desc')
-      .limit(50)
-      .get();
+    const urgents = await UrgentChat.find({
+      project_id: process.env.PROJECT_ID || 'default'
+    }).sort({ timestamp: -1 }).limit(50);
 
-    const urgentMessages = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        is_urgent: data.urgency_analysis?.is_urgent ?? false
-      };
-    });
+    const urgentMessages = urgents.map(urgent => ({
+      id: urgent._id,
+      ...urgent.toObject(),
+      is_urgent: urgent.urgency_analysis?.is_urgent ?? false
+    }));
 
-    return res.status(200).json(urgentMessages);
-  } catch (error) {
-    console.error('Get Urgent Chats Error:', error);
+    res.status(200).json(urgentMessages);
+  } catch (err) {
+    console.error('Get Urgent Chats Error:', err);
     res.status(500).json({ error: 'Gagal mengambil urgent chats' });
   }
 };
@@ -256,32 +233,26 @@ exports.getAllUserChats = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const snapshot = await db.collection('chats')
-      .where('project_id', '==', process.env.PROJECT_ID || 'default')
-      .where('participants', 'array-contains', userId)
-      .orderBy('timestamp', 'desc')
-      .get();
+    const chats = await Chat.find({
+      project_id: process.env.PROJECT_ID || 'default',
+      participants: userId
+    }).sort({ timestamp: -1 });
 
-    const chatMap = new Map();
-
-    snapshot.docs.forEach(doc => {
-      const data = doc.data();
-      const otherUserId = data.sender_id === userId ? data.receiver_id : data.sender_id;
-
-      if (!chatMap.has(otherUserId)) {
-        chatMap.set(otherUserId, {
-          id: doc.id,
-          ...data,
-          is_urgent: data.urgency_analysis?.is_urgent ?? false
+    const map = new Map();
+    for (const chat of chats) {
+      const otherId = chat.sender_id === userId ? chat.receiver_id : chat.sender_id;
+      if (!map.has(otherId)) {
+        map.set(otherId, {
+          id: chat._id,
+          ...chat.toObject(),
+          is_urgent: chat.urgency_analysis?.is_urgent ?? false
         });
       }
-    });
+    }
 
-    const recentChats = Array.from(chatMap.values());
-
-    return res.status(200).json(recentChats);
-  } catch (error) {
-    console.error('Get All User Chats Error:', error);
-    return res.status(500).json({ error: 'Gagal mengambil daftar chat' });
+    res.status(200).json([...map.values()]);
+  } catch (err) {
+    console.error('Get All Chats Error:', err);
+    res.status(500).json({ error: 'Gagal mengambil chat' });
   }
 };
