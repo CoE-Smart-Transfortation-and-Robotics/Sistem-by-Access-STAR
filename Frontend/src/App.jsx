@@ -25,6 +25,7 @@ import BookingPage from './pages/user/BookingPage';
 import BookingHistoryPage from './pages/user/BookingHistoryPage';
 import ChatPage from './pages/user/ChatPage';
 import AdminChatPage from './pages/admin/AdminChatPage';
+import UrgentChatBubble from './components/UrgentChatBubble';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -167,6 +168,7 @@ function App() {
     <AuthProvider>
       <Router>
         <AppRoutes />
+  <UrgentChatBubble />
       </Router>
     </AuthProvider>
   );
