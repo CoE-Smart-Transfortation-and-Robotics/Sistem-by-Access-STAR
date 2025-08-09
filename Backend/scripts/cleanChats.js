@@ -17,7 +17,7 @@ async function deleteChatsByProjectId() {
 
   try {
     const deletedChats = await deleteByProjectId(Chat, 'chats');
-    const deletedUrgentChats = await deleteByProjectId(UrgentChat, 'urgent_chats');
+    const deletedUrgentChats = await deleteByProjectId(UrgentChat, 'urgentchats');
 
     console.log(`✅ Total yang dihapus: ${deletedChats + deletedUrgentChats} dokumen`);
   } catch (err) {

@@ -816,7 +816,9 @@
 
       // Helper function to create message hash for comparison
       function createMessageHash(messages) {
-        return messages.map(msg => `${msg.sender_id}-${msg.message}-${msg.timestamp}`).join('|');
+        return messages
+          .map((msg) => `${msg.sender_id}-${msg.message}-${msg.timestamp}`)
+          .join("|");
       }
 
       // Load saved user data saat halaman dimuat
@@ -985,17 +987,21 @@
           existingChats.sort((a, b) => b.timestamp - a.timestamp);
 
           // Only update if there are changes
-          const newHash = JSON.stringify(existingChats.map(chat => ({
-            userId: chat.user.id,
-            lastMessage: chat.lastMessage.message,
-            timestamp: chat.timestamp.getTime()
-          })));
-          
-          const oldHash = JSON.stringify(chatList.map(chat => ({
-            userId: chat.user.id,
-            lastMessage: chat.lastMessage.message,
-            timestamp: chat.timestamp.getTime()
-          })));
+          const newHash = JSON.stringify(
+            existingChats.map((chat) => ({
+              userId: chat.user.id,
+              lastMessage: chat.lastMessage.message,
+              timestamp: chat.timestamp.getTime(),
+            }))
+          );
+
+          const oldHash = JSON.stringify(
+            chatList.map((chat) => ({
+              userId: chat.user.id,
+              lastMessage: chat.lastMessage.message,
+              timestamp: chat.timestamp.getTime(),
+            }))
+          );
 
           if (newHash !== oldHash) {
             chatList = existingChats;
@@ -1050,21 +1056,24 @@
               minute: "2-digit",
             });
 
+            // ✅ Fix: Escape quotes untuk mencegah error JavaScript
+            const escapedName = chat.user.name.replace(/'/g, "\\'");
+
             return `
-              <div class="chat-item ${currentlyActiveId === chat.user.id ? "active" : ""}" 
-                   onclick="selectChat(${chat.user.id}, '${chat.user.name}')">
+              <div class="chat-item ${
+                currentlyActiveId === chat.user.id ? "active" : ""
+              }" 
+                   onclick="selectChat(${chat.user.id}, '${escapedName}')">
                 <div class="chat-avatar">
                   ${chat.user.name.charAt(0).toUpperCase()}
                 </div>
                 <div class="chat-info">
                   <div class="chat-name">${chat.user.name}</div>
                   <div class="chat-last-message">
-                    
-                  </div>
                     ${isCurrentUser ? "Anda: " : ""}${messagePreview}
                   </div>
                 </div>
-                                  <div class="chat-meta">
+                <div class="chat-meta">
                   <div class="chat-time">${time}</div>
                   ${
                     chat.unreadCount > 0
@@ -1084,11 +1093,19 @@
           name: userName,
         };
 
-        // Update active chat item
-        document.querySelectorAll(".chat-item").forEach((item) => {
+        // ✅ Fix: Cari element dengan cara yang lebih aman
+        const chatItems = document.querySelectorAll(".chat-item");
+        chatItems.forEach((item) => {
           item.classList.remove("active");
         });
-        event.currentTarget.classList.add("active");
+
+        // ✅ Fix: Cari element yang tepat berdasarkan userId
+        const targetChatItem = document.querySelector(
+          `[onclick*="selectChat(${userId}"]`
+        );
+        if (targetChatItem) {
+          targetChatItem.classList.add("active");
+        }
 
         // Show chat header and input
         document.getElementById("chatHeader").style.display = "flex";
@@ -1102,7 +1119,7 @@
 
         // Reset current messages array
         currentMessages = [];
-        
+
         // Load chat history
         loadChatHistory();
         setupChatRefresh(userId);
@@ -1167,15 +1184,16 @@
 
       function displayMessages(messages) {
         const container = document.getElementById("chatContainer");
-        
+
         // Store scroll position to maintain it
         const wasAtBottom =
           container.scrollTop >=
           container.scrollHeight - container.clientHeight - 50;
 
         // Only clear and rebuild if we're switching chats or if container is empty
-        const shouldRebuild = container.querySelector('.empty-state') || 
-                              container.children.length !== messages.length;
+        const shouldRebuild =
+          container.querySelector(".empty-state") ||
+          container.children.length !== messages.length;
 
         if (shouldRebuild) {
           container.innerHTML = "";
@@ -1198,7 +1216,8 @@
           });
         } else {
           // Check for new messages only
-          const existingMessageCount = container.querySelectorAll('.message').length;
+          const existingMessageCount =
+            container.querySelectorAll(".message").length;
           if (messages.length > existingMessageCount) {
             // Add only new messages
             for (let i = existingMessageCount; i < messages.length; i++) {
@@ -1298,8 +1317,9 @@
             showError("Sesi berakhir, silakan login ulang");
             setTimeout(() => logout(), 2000);
           } else {
-            // Remove optimistic message if failed
-            const messages = container.querySelectorAll('.message');
+            // ✅ Fix: Referensi container yang benar
+            const container = document.getElementById("chatContainer");
+            const messages = container.querySelectorAll(".message");
             if (messages.length > 0) {
               messages[messages.length - 1].remove();
             }
@@ -1307,9 +1327,9 @@
           }
         } catch (error) {
           console.error("Error sending message:", error);
-          // Remove optimistic message if failed
+          // ✅ Fix: Referensi container yang benar
           const container = document.getElementById("chatContainer");
-          const messages = container.querySelectorAll('.message');
+          const messages = container.querySelectorAll(".message");
           if (messages.length > 0) {
             messages[messages.length - 1].remove();
           }
@@ -1329,12 +1349,20 @@
       }
 
       async function createNewChat() {
-        const userId = parseInt(
-          document.getElementById("newChatUserId").value.trim()
-        );
+        const userIdInput = document.getElementById("newChatUserId");
+        const userIdValue = userIdInput.value.trim();
 
-        if (!userId) {
+        // ✅ Fix: Validasi input lebih robust
+        if (!userIdValue) {
           showError("Masukkan User ID terlebih dahulu!");
+          return;
+        }
+
+        const userId = parseInt(userIdValue);
+
+        // ✅ Fix: Validasi parsing
+        if (isNaN(userId) || userId <= 0) {
+          showError("User ID harus berupa angka yang valid!");
           return;
         }
 
@@ -1367,89 +1395,190 @@
           hideNewChatModal();
           showSuccess(`Chat baru dengan ${targetUser.name} dimulai!`);
         } catch (error) {
+          console.error("Error dalam createNewChat:", error);
           showError("Error membuat chat baru: " + error.message);
         }
       }
 
-      function filterChats() {
-        const searchTerm = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const chatItems = document.querySelectorAll(".chat-item");
+      // ✅ Fix: Perbaiki renderChatList untuk menghindari masalah event binding
+      function renderChatList() {
+        const chatListContainer = document.getElementById("chatList");
+        const currentlyActiveId = currentChatUser ? currentChatUser.id : null;
 
-        chatItems.forEach((item) => {
-          const chatName = item
-            .querySelector(".chat-name")
-            .textContent.toLowerCase();
-          const lastMessage = item
-            .querySelector(".chat-last-message")
-            .textContent.toLowerCase();
-
-          if (
-            chatName.includes(searchTerm) ||
-            lastMessage.includes(searchTerm)
-          ) {
-            item.style.display = "flex";
-          } else {
-            item.style.display = "none";
-          }
-        });
-      }
-
-      function deleteCurrentChat() {
-        if (!currentChatUser) return;
-
-        if (
-          confirm(`Yakin ingin menghapus chat dengan ${currentChatUser.name}?`)
-        ) {
-          // Clear refresh interval for this chat
-          if (chatRefreshIntervals[currentChatUser.id]) {
-            clearInterval(chatRefreshIntervals[currentChatUser.id]);
-            delete chatRefreshIntervals[currentChatUser.id];
-          }
-
-          // Remove from chat list
-          chatList = chatList.filter(
-            (chat) => chat.user.id !== currentChatUser.id
-          );
-          renderChatList();
-
-          // Clear chat area
-          currentChatUser = null;
-          currentMessages = [];
-          document.getElementById("chatHeader").style.display = "none";
-          document.getElementById("inputContainer").style.display = "none";
-          document.getElementById("chatContainer").innerHTML = `
+        if (chatList.length === 0) {
+          chatListContainer.innerHTML = `
             <div class="empty-state">
-              <i class="fab fa-whatsapp"></i>
-              <h3>WhatsApp Chat Tester</h3>
-              <p>Pilih chat untuk mulai percakapan</p>
+              <i class="fas fa-comments"></i>
+              <h3>Belum ada chat</h3>
+              <p>Klik tombol + untuk memulai chat baru</p>
             </div>
           `;
+          return;
+        }
 
-          showSuccess("Chat berhasil dihapus dari list");
+        chatListContainer.innerHTML = chatList
+          .map((chat) => {
+            const isCurrentUser = chat.lastMessage.sender_id === currentUser.id;
+            const messagePreview =
+              chat.lastMessage.message.length > 30
+                ? chat.lastMessage.message.substring(0, 30) + "..."
+                : chat.lastMessage.message;
+
+            const time = chat.timestamp.toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            // ✅ Fix: Escape quotes untuk mencegah error JavaScript
+            const escapedName = chat.user.name.replace(/'/g, "\\'");
+
+            return `
+              <div class="chat-item ${
+                currentlyActiveId === chat.user.id ? "active" : ""
+              }" 
+                   onclick="selectChat(${chat.user.id}, '${escapedName}')">
+                <div class="chat-avatar">
+                  ${chat.user.name.charAt(0).toUpperCase()}
+                </div>
+                <div class="chat-info">
+                  <div class="chat-name">${chat.user.name}</div>
+                  <div class="chat-last-message">
+                    ${isCurrentUser ? "Anda: " : ""}${messagePreview}
+                  </div>
+                </div>
+                <div class="chat-meta">
+                  <div class="chat-time">${time}</div>
+                  ${
+                    chat.unreadCount > 0
+                      ? `<div class="unread-count">${chat.unreadCount}</div>`
+                      : ""
+                  }
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      // ✅ Fix: Perbaiki event handler untuk sendMessage
+      async function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+
+        if (!message || !currentUser || !currentChatUser) {
+          return;
+        }
+
+        messageInput.value = "";
+        messageInput.style.height = "auto";
+
+        // Optimistically add message to UI
+        addMessage(message, true, new Date());
+
+        try {
+          const response = await fetch(`${apiUrl}/chat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+            body: JSON.stringify({
+              receiver_id: currentChatUser.id,
+              message: message,
+            }),
+          });
+
+          if (response.ok) {
+            // Force immediate refresh for current chat and chat list
+            setTimeout(() => {
+              loadChatHistory();
+              loadChatList();
+            }, 500);
+          } else if (response.status === 401) {
+            showError("Sesi berakhir, silakan login ulang");
+            setTimeout(() => logout(), 2000);
+          } else {
+            // ✅ Fix: Referensi container yang benar
+            const container = document.getElementById("chatContainer");
+            const messages = container.querySelectorAll(".message");
+            if (messages.length > 0) {
+              messages[messages.length - 1].remove();
+            }
+            showError("Gagal mengirim pesan");
+          }
+        } catch (error) {
+          console.error("Error sending message:", error);
+          // ✅ Fix: Referensi container yang benar
+          const container = document.getElementById("chatContainer");
+          const messages = container.querySelectorAll(".message");
+          if (messages.length > 0) {
+            messages[messages.length - 1].remove();
+          }
+          showError("Error mengirim pesan");
         }
       }
 
-      function logout() {
-        currentUser = null;
-        currentChatUser = null;
-        chatList = [];
-        currentMessages = [];
-        lastMessageHashes = {};
+      // Modal functions
+      function showNewChatModal() {
+        document.getElementById("newChatModal").classList.add("show");
+        document.getElementById("newChatUserId").focus();
+      }
 
-        // Clear all intervals
-        Object.values(chatRefreshIntervals).forEach((interval) => {
-          clearInterval(interval);
-        });
-        chatRefreshIntervals = {};
+      function hideNewChatModal() {
+        document.getElementById("newChatModal").classList.remove("show");
+        document.getElementById("newChatUserId").value = "";
+      }
 
-        localStorage.removeItem("wa_chat_current_user");
+      async function createNewChat() {
+        const userIdInput = document.getElementById("newChatUserId");
+        const userIdValue = userIdInput.value.trim();
 
-        document.getElementById("chatApp").classList.remove("active");
-        document.getElementById("loginScreen").style.display = "flex";
-        document.getElementById("loginEmail").value = "";
-        document.getElementById("loginPassword").value = "";
+        // ✅ Fix: Validasi input lebih robust
+        if (!userIdValue) {
+          showError("Masukkan User ID terlebih dahulu!");
+          return;
+        }
+
+        const userId = parseInt(userIdValue);
+
+        // ✅ Fix: Validasi parsing
+        if (isNaN(userId) || userId <= 0) {
+          showError("User ID harus berupa angka yang valid!");
+          return;
+        }
+
+        if (userId === currentUser.id) {
+          showError("Tidak bisa chat dengan diri sendiri!");
+          return;
+        }
+
+        try {
+          // Check if user exists
+          const users = await getAllUsers();
+          const targetUser = users.find((u) => u.id === userId);
+
+          if (!targetUser) {
+            showError("User tidak ditemukan!");
+            return;
+          }
+
+          // Check if chat already exists
+          const existingChat = chatList.find((chat) => chat.user.id === userId);
+          if (existingChat) {
+            selectChat(userId, targetUser.name);
+            hideNewChatModal();
+            showSuccess("Chat sudah ada, membuka chat...");
+            return;
+          }
+
+          // Select new chat
+          selectChat(userId, targetUser.name);
+          hideNewChatModal();
+          showSuccess(`Chat baru dengan ${targetUser.name} dimulai!`);
+        } catch (error) {
+          console.error("Error dalam createNewChat:", error);
+          showError("Error membuat chat baru: " + error.message);
+        }
       }
 
       // Click outside modal to close
@@ -1471,7 +1600,7 @@
         });
 
       // Cleanup intervals when page unloads
-      window.addEventListener('beforeunload', function() {
+      window.addEventListener("beforeunload", function () {
         Object.values(chatRefreshIntervals).forEach((interval) => {
           clearInterval(interval);
         });
