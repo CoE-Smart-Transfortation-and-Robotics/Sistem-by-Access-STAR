@@ -1,0 +1,460 @@
+/* Schedule Board Display Monitor CSS */
+.schedule-board-container-dismon {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 1.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+}
+
+.schedule-board-wrapper-dismon {
+  max-width: 1674px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.header-section-dismon {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.station-info-dismon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.map-pin-icon-dismon {
+  width: 2rem;
+  height: 2rem;
+  color: #3498db;
+}
+
+.station-title-dismon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.station-subtitle-dismon {
+  font-size: 0.875rem;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.time-info-dismon {
+  text-align: right;
+  min-width: 200px;
+}
+
+.current-time-dismon {
+  font-size: 2.5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1;
+}
+
+.current-date-dismon {
+  font-size: 0.875rem;
+  color: #7f8c8d;
+  margin: 0;
+  margin-top: 0.25rem;
+}
+
+/* Filter Section */
+.filter-section-dismon {
+  margin-bottom: 2rem;
+}
+
+.filter-header-dismon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-icon-dismon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #7f8c8d;
+}
+
+.filter-title-dismon {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.filter-buttons-dismon {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+.filter-button-dismon {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.filter-button-active-dismon {
+  background: #3498db;
+  color: white;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
+}
+
+.filter-button-inactive-dismon {
+  background: white;
+  color: #2c3e50;
+  border: 1px solid #bdc3c7;
+}
+
+.filter-button-inactive-dismon:hover {
+  background: #ecf0f1;
+  transform: translateY(-1px);
+}
+
+/* Schedule Tables Container */
+.schedule-tables-container-dismon {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+/* Schedule Table */
+.schedule-table-container-dismon {
+  background: white;
+  border: 1px solid #e1e8ed;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  flex: 1;
+  min-width: 0; /* Allows flex items to shrink below content size */
+}
+
+.schedule-table-dismon {
+  width: 100%;
+  font-size: 0.875rem;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.table-header-dismon {
+  background: #f8f9fa;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.table-header-cell-dismon {
+  padding: 1rem;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.table-header-center-dismon {
+  text-align: center;
+}
+
+/* Train Header Row */
+.train-header-row-dismon {
+  background: #f8f9fa;
+  border-top: 1px solid #e1e8ed;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.train-header-cell-dismon {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.train-info-dismon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.train-icon-dismon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #3498db;
+}
+
+/* Station Rows */
+.station-row-dismon {
+  border-bottom: 1px solid #f1f3f4;
+  background: white;
+  transition: background-color 0.3s ease;
+  opacity: 0;
+  animation: fadeInUp-dismon 0.5s ease-out forwards;
+}
+
+.station-row-dismon:hover {
+  background: #f8f9fa;
+}
+
+.station-cell-dismon {
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.station-cell-center-dismon {
+  text-align: center;
+}
+
+.station-info-cell-dismon {
+  display: flex;
+  align-items: center;
+}
+
+.timeline-indicator-dismon {
+  width: 0.25rem;
+  height: 2.5rem;
+  background: #bdc3c7;
+  margin-right: 1rem;
+  margin-left: 0.25rem;
+  position: relative;
+  border-radius: 2px;
+}
+
+.timeline-dot-dismon {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: white;
+  border: 2px solid;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.timeline-dot-departure-dismon {
+  border-color: #3498db;
+}
+
+.timeline-dot-transit-dismon {
+  border-color: #95a5a6;
+}
+
+.timeline-dot-arrival-dismon {
+  border-color: #27ae60;
+}
+
+.station-details-dismon {
+  flex: 1;
+}
+
+.station-name-dismon {
+  font-weight: 500;
+  color: #2c3e50;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.station-code-dismon {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  font-family: 'Courier New', monospace;
+  margin: 0;
+  margin-top: 0.125rem;
+}
+
+.time-display-dismon {
+  font-family: 'Courier New', monospace;
+  font-size: 1.125rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.station-type-badge-dismon {
+  padding: 0.375rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  display: inline-block;
+}
+
+.badge-departure-dismon {
+  color: #3498db;
+  background: #ebf3fd;
+  border-color: #bde3ff;
+}
+
+.badge-transit-dismon {
+  color: #f39c12;
+  background: #fef9e7;
+  border-color: #f7dc6f;
+}
+
+.badge-arrival-dismon {
+  color: #27ae60;
+  background: #eafaf1;
+  border-color: #a9dfbf;
+}
+
+.platform-number-dismon {
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+/* Loading State */
+.loading-container-dismon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: #7f8c8d;
+}
+
+.loading-spinner-dismon {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin-dismon 1s linear infinite;
+  margin-right: 1rem;
+}
+
+/* Error State */
+.error-container-dismon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: #e74c3c;
+  text-align: center;
+}
+
+.error-message-dismon {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button-dismon {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.retry-button-dismon:hover {
+  background: #2980b9;
+}
+
+/* Animations */
+@keyframes fadeInUp-dismon {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin-dismon {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .schedule-board-container-dismon {
+    padding: 1rem;
+  }
+
+  .header-section-dismon {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .time-info-dismon {
+    text-align: left;
+  }
+
+  .current-time-dismon {
+    font-size: 2rem;
+  }
+
+  .station-title-dismon {
+    font-size: 1.25rem;
+  }
+
+  .filter-buttons-dismon {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-button-dismon {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Stack tables vertically on mobile */
+  .schedule-tables-container-dismon {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .schedule-table-container-dismon {
+    overflow-x: auto;
+  }
+
+  .table-header-cell-dismon,
+  .station-cell-dismon {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .station-info-cell-dismon {
+    min-width: 200px;
+  }
+
+  .time-display-dismon {
+    font-size: 1rem;
+  }
+
+  .current-time-dismon {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-indicator-dismon {
+    height: 2rem;
+    margin-right: 0.5rem;
+  }
+
+  .station-name-dismon {
+    font-size: 0.8rem;
+  }
+
+  .station-code-dismon {
+    font-size: 0.7rem;
+  }
+}

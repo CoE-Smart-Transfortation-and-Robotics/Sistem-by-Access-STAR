@@ -22,6 +22,7 @@ import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
 import BookingPage from './pages/user/BookingPage';
 import BookingHistoryPage from './pages/user/BookingHistoryPage';  // ✅ Import BookingPage
+import ScheduleBoardPage from './pages/user/ScheduleBoardPage';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -52,6 +53,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BookingHistoryPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/schedule-board" 
+        element={
+          <ProtectedRoute>
+            <ScheduleBoardPage />
           </ProtectedRoute>
         } 
       />
