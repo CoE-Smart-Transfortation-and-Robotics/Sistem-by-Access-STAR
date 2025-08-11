@@ -22,10 +22,14 @@ import StationManagementPage from './pages/admin/StationPage';
 import UserDashboardPage from './pages/user/UserDashboard';
 import ProfilePage from './pages/user/ProfilePage';
 import BookingPage from './pages/user/BookingPage';
-import BookingHistoryPage from './pages/user/BookingHistoryPage';
+
+import BookingHistoryPage from './pages/user/BookingHistoryPage';  
+import ScheduleBoardPage from './pages/user/ScheduleBoardPage';
+
 import ChatPage from './pages/user/ChatPage';
 import AdminChatPage from './pages/admin/AdminChatPage';
 import UrgentChatBubble from './components/UrgentChatBubble';
+
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -56,6 +60,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BookingHistoryPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/schedule-board" 
+        element={
+          <ProtectedRoute>
+            <ScheduleBoardPage />
           </ProtectedRoute>
         } 
       />

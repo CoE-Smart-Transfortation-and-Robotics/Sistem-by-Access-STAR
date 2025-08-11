@@ -260,11 +260,11 @@ const UserDashboard = () => {
       category: 'booking'
     },
     { 
-      icon: '🚂', 
-      title: 'KA Bandara', 
-      action: 'airport-train',
+      icon: '�', 
+      title: 'Papan Jadwal', 
+      action: 'schedule-board',
       color: '#4A90E2',
-      description: 'Layanan kereta ke bandara',
+      description: 'Lihat jadwal keberangkatan kereta',
       category: 'service'
     },
     { 
@@ -330,6 +330,9 @@ const UserDashboard = () => {
         break;
       case 'reschedule':
         console.log('Navigate to reschedule page');
+        break;
+      case 'schedule-board':
+        navigate('/schedule-board');
         break;
       default:
         console.log(`Action: ${action} - Coming soon!`);
