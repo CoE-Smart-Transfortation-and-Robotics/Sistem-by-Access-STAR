@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Chat - Emergency Support</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #0c1317;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .login-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .login-card {
+        background: #202c33;
+        border-radius: 15px;
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .login-header i {
+        font-size: 64px;
+        color: #25d366;
+        margin-bottom: 15px;
+      }
+
+      .login-header h1 {
+        color: #e9edef;
+        font-size: 24px;
+        font-weight: 400;
+        margin-bottom: 5px;
+      }
+
+      .login-header p {
+        color: #8696a0;
+        font-size: 14px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        color: #8696a0;
+        font-size: 14px;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 15px;
+        background: #2a3942;
+        border: 1px solid #313d45;
+        border-radius: 8px;
+        color: #e9edef;
+        font-size: 16px;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #25d366;
+      }
+
+      .login-btn {
+        background: #25d366;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        width: 100%;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .login-btn:hover {
+        background: #1ea952;
+      }
+
+      .login-btn:disabled {
+        background: #3c4043;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ffffff30;
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .chat-app {
+        display: none;
+        height: 100vh;
+        flex-direction: column;
+        background: #0c1317;
+      }
+
+      .chat-app.active {
+        display: flex;
+      }
+
+      /* Header */
+      .chat-header {
+        background: #202c33;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid #313d45;
+      }
+
+      .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #25d366, #128c7e);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .chat-header-info h2 {
+        color: #e9edef;
+        font-size: 16px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chat-header-info .status {
+        color: #8696a0;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+
+      .chat-header-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+      }
+
+      .header-btn {
+        background: none;
+        border: none;
+        color: #8696a0;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 50%;
+        transition: background 0.2s;
+      }
+
+      .header-btn:hover {
+        background: rgba(134, 150, 160, 0.1);
+      }
+
+      .urgent-btn {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+        animation: pulse 2s infinite;
+      }
+
+      .urgent-btn:hover {
+        background: #c53030;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+        }
+      }
+
+      .chat-container {
+        flex: 1;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="chat-bg" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="%230c1317"/><rect width="100" height="100" fill="url(%23chat-bg)"/></svg>');
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message {
+        max-width: 70%;
+        word-wrap: break-word;
+        margin-bottom: 4px;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.sent {
+        align-self: flex-end;
+      }
+
+      .message.received {
+        align-self: flex-start;
+      }
+
+      .message.urgent {
+        animation: urgentGlow 2s infinite;
+      }
+
+      @keyframes urgentGlow {
+        0%, 100% {
+          box-shadow: 0 0 5px rgba(229, 62, 62, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(229, 62, 62, 0.6);
+        }
+      }
+
+      .message-bubble {
+        padding: 8px 12px;
+        border-radius: 7px;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .message.sent .message-bubble {
+        background: #005c4b;
+        color: #e9edef;
+      }
+
+      .message.received .message-bubble {
+        background: #202c33;
+        color: #e9edef;
+      }
+
+      .message.urgent .message-bubble {
+        background: rgba(229, 62, 62, 0.2);
+        border-left: 4px solid #e53e3e;
+      }
+
+      .message-time {
+        font-size: 11px;
+        color: rgba(233, 237, 239, 0.6);
+        margin-top: 4px;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .message.received .message-time {
+        justify-content: flex-start;
+      }
+
+      .urgent-label {
+        background: #e53e3e;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: bold;
+        margin-left: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      .ai-analysis-info {
+        background: rgba(135, 206, 235, 0.1);
+        border-left: 3px solid #87ceeb;
+        padding: 4px 8px;
+        margin-top: 4px;
+        border-radius: 4px;
+        font-style: italic;
+      }
+
+      .ai-analysis-info small {
+        color: #4a90e2;
+        font-size: 11px;
+      }
+
+      .read-status {
+        font-size: 12px;
+        color: #53bdeb;
+      }
+
+      .input-container {
+        background: #202c33;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-top: 1px solid #313d45;
+      }
+
+      .message-input {
+        flex: 1;
+        background: #2a3942;
+        border: none;
+        border-radius: 20px;
+        padding: 12px 16px;
+        color: #e9edef;
+        font-size: 15px;
+        resize: none;
+        max-height: 100px;
+        min-height: 44px;
+      }
+
+      .message-input:focus {
+        outline: none;
+        background: #2a3942;
+      }
+
+      .message-input::placeholder {
+        color: #8696a0;
+      }
+
+      .send-btn {
+        background: #25d366;
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .send-btn:hover {
+        background: #1ea952;
+      }
+
+      .send-btn i {
+        color: white;
+        font-size: 16px;
+      }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #8696a0;
+        text-align: center;
+        gap: 20px;
+      }
+
+      .empty-state i {
+        font-size: 64px;
+        opacity: 0.3;
+      }
+
+      .empty-state h3 {
+        font-size: 18px;
+        font-weight: 400;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+        max-width: 300px;
+        line-height: 1.4;
+      }
+
+      .error-message {
+        background: #f44336;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin: 10px 20px;
+        font-size: 14px;
+        animation: slideDown 0.3s ease;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .success-message {
+        background: #25d366;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin: 10px 20px;
+        font-size: 14px;
+        animation: slideDown 0.3s ease;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      .quick-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+
+      .quick-btn {
+        background: #2a3942;
+        color: #e9edef;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.2s;
+        border: 1px solid #313d45;
+      }
+
+      .quick-btn:hover {
+        background: #313d45;
+      }
+
+      .quick-btn.urgent {
+        background: rgba(229, 62, 62, 0.2);
+        border-color: #e53e3e;
+        color: #e53e3e;
+      }
+
+      .quick-btn.urgent:hover {
+        background: rgba(229, 62, 62, 0.3);
+      }
+
+      .user-info {
+        background: rgba(37, 211, 102, 0.1);
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #25d366;
+        font-size: 14px;
+        color: #e9edef;
+      }
+
+      @media (max-width: 768px) {
+        .chat-container {
+          padding: 15px;
+        }
+
+        .message {
+          max-width: 85%;
+        }
+
+        .quick-buttons {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+      <div class="login-card">
+        <div class="login-header">
+          <i class="fas fa-comments"></i>
+          <h1>Emergency Support Chat</h1>
+          <p>Login untuk akses chat darurat dengan CS</p>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email:</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="user@email.com"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Masukkan password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <i class="fas fa-sign-in-alt"></i>
+            Login User
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #313d45;">
+          <small style="color: #8696a0;">
+            Admin CS? <a href="ChatCust.html" style="color: #25d366;">Login di sini</a>
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat App -->
+    <div class="chat-app" id="chatApp">
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="chat-header-avatar">CS</div>
+        <div class="chat-header-info">
+          <h2 id="chatHeaderName">
+            Customer Service
+            <span style="color: #25d366;">🟢 Online</span>
+          </h2>
+          <div class="status">Emergency Support Available 24/7</div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="urgent-btn" onclick="toggleUrgentMode()" id="urgentToggle">
+            🚨 Mode Darurat
+          </button>
+          <button class="header-btn" onclick="logout()" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div class="user-info" id="userInfo">
+        <i class="fas fa-user"></i>
+        <span id="userInfoText">Loading user info...</span>
+      </div>
+
+      <!-- Chat Container -->
+      <div class="chat-container" id="chatContainer">
+        <div class="empty-state">
+          <i class="fas fa-headset"></i>
+          <h3>Selamat datang di Emergency Support</h3>
+          <p>Kami siap membantu Anda 24/7. Gunakan tombol darurat jika ada emergency.</p>
+        </div>
+      </div>
+
+      <!-- Input Container -->
+      <div class="input-container">
+        <div class="quick-buttons" id="quickButtons">
+          <button class="quick-btn" onclick="quickMessage('Saya membutuhkan bantuan')">
+            💬 Butuh Bantuan
+          </button>
+          <button class="quick-btn urgent" onclick="quickMessage('DARURAT! Saya membutuhkan bantuan segera!')">
+            🚨 DARURAT
+          </button>
+          <button class="quick-btn" onclick="quickMessage('Ada masalah dengan kereta')">
+            🚂 Masalah Kereta
+          </button>
+          <button class="quick-btn" onclick="quickMessage('Saya terjebak di dalam kereta')">
+            🔒 Terjebak
+          </button>
+          <button class="quick-btn urgent" onclick="quickMessage('Ada kecelakaan! Tolong kirim bantuan!')">
+            ⚠️ Kecelakaan
+          </button>
+          <button class="quick-btn urgent" onclick="quickMessage('Ada yang sakit dan butuh pertolongan medis!')">
+            🏥 Medis
+          </button>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <textarea
+            class="message-input"
+            id="messageInput"
+            placeholder="Ketik pesan Anda..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const apiUrl = "http://localhost:9000/api";
+      let currentUser = null;
+      let adminId = null;
+      let currentMessages = [];
+      let refreshInterval;
+      let urgentMode = false;
+
+      // Helper function untuk parse timestamp
+      function parseTimestamp(timestamp) {
+        if (!timestamp) return new Date();
+        if (timestamp instanceof Date) return timestamp;
+        if (typeof timestamp === "string") {
+          const date = new Date(timestamp);
+          return isNaN(date.getTime()) ? new Date() : date;
+        }
+        return new Date();
+      }
+
+      // Helper function untuk create message hash
+      function createMessageHash(messages) {
+        return messages.map(msg => `${msg.sender_id}-${msg.message}-${msg.timestamp}`).join('|');
+      }
+
+      // Load saved user data
+      window.addEventListener("DOMContentLoaded", function () {
+        const savedUser = localStorage.getItem("user_chat_data");
+        if (savedUser) {
+          try {
+            currentUser = JSON.parse(savedUser);
+            if (currentUser.role === 'user') {
+              document.getElementById("loginScreen").style.display = "none";
+              document.getElementById("chatApp").classList.add("active");
+              updateUserInfo();
+              findAdmin();
+              setupChatRefresh();
+            } else {
+              localStorage.removeItem("user_chat_data");
+            }
+          } catch (error) {
+            console.error("Error loading saved user:", error);
+            localStorage.removeItem("user_chat_data");
+          }
+        }
+      });
+
+      // Login form handler - hanya user yang bisa login
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("loginEmail").value.trim();
+          const password = document
+            .getElementById("loginPassword")
+            .value.trim();
+          const loginBtn = document.getElementById("loginBtn");
+
+          if (!email || !password) {
+            showError("Email dan password harus diisi!");
+            return;
+          }
+
+          loginBtn.disabled = true;
+          loginBtn.innerHTML = '<div class="spinner"></div> Login...';
+
+          try {
+            const response = await fetch(`${apiUrl}/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success && data.token) {
+              // Cek apakah user adalah user biasa (bukan admin)
+              if (data.user.role === 'admin') {
+                showError("Akses ditolak! Admin silakan gunakan ChatCust.html");
+                return;
+              }
+
+              currentUser = {
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email,
+                role: data.user.role,
+                token: data.token,
+              };
+
+              localStorage.setItem(
+                "user_chat_data",
+                JSON.stringify(currentUser)
+              );
+
+              setTimeout(() => {
+                document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("chatApp").classList.add("active");
+                updateUserInfo();
+                findAdmin();
+                setupChatRefresh();
+              }, 500);
+            } else {
+              showError(data.message || "Login gagal!");
+            }
+          } catch (error) {
+            showError("Error: " + error.message);
+          } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login User';
+          }
+        });
+
+      // Auto-resize textarea
+      document
+        .getElementById("messageInput")
+        .addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = Math.min(this.scrollHeight, 100) + "px";
+        });
+
+      // Send message on Enter
+      document
+        .getElementById("messageInput")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+      function showError(message) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error-message";
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 3000);
+      }
+
+      function showSuccess(message) {
+        const successDiv = document.createElement("div");
+        successDiv.className = "success-message";
+        successDiv.textContent = message;
+        document.body.appendChild(successDiv);
+
+        setTimeout(() => {
+          successDiv.remove();
+        }, 3000);
+      }
+
+      function updateUserInfo() {
+        if (currentUser) {
+          document.getElementById("userInfoText").textContent = 
+            `👤 ${currentUser.name || currentUser.email} | ID: ${currentUser.id} | Status: Connected`;
+        }
+      }
+
+      // Find admin to chat with
+      async function findAdmin() {
+        if (!currentUser) return;
+
+        try {
+          const response = await fetch(`${apiUrl}/users`, {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+          });
+
+          const data = await response.json();
+          const users = Array.isArray(data) ? data : data.data || [];
+          const admin = users.find(u => u.role === 'admin');
+          
+          if (admin) {
+            adminId = admin.id;
+            console.log('Found admin:', admin);
+            loadChatHistory();
+          } else {
+            showError("Admin tidak ditemukan");
+            adminId = 1; // fallback
+            loadChatHistory();
+          }
+        } catch (error) {
+          console.error("Error finding admin:", error);
+          adminId = 1; // fallback
+          loadChatHistory();
+        }
+      }
+
+      function setupChatRefresh() {
+        setInterval(() => {
+          if (adminId) {
+            loadChatHistory();
+          }
+        }, 2000);
+      }
+
+      async function loadChatHistory() {
+        if (!currentUser || !adminId) return;
+
+        try {
+          const response = await fetch(
+            `${apiUrl}/chat?with_user_id=${adminId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${currentUser.token}`,
+              },
+            }
+          );
+
+          const data = await response.json();
+          let messages = [];
+
+          if (response.ok) {
+            messages = Array.isArray(data) ? data : data.data || [];
+          } else if (response.status === 401) {
+            showError("Sesi berakhir, silakan login ulang");
+            setTimeout(() => logout(), 2000);
+            return;
+          }
+
+          // Check if messages have changed
+          const newHash = createMessageHash(messages);
+          const oldHash = createMessageHash(currentMessages);
+
+          if (newHash !== oldHash) {
+            currentMessages = messages;
+            displayMessages(messages);
+          }
+        } catch (error) {
+          console.error("Error loading chat:", error);
+        }
+      }
+
+      function displayMessages(messages) {
+        const container = document.getElementById("chatContainer");
+        
+        const wasAtBottom =
+          container.scrollTop >=
+          container.scrollHeight - container.clientHeight - 50;
+
+        container.innerHTML = "";
+
+        if (messages.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-headset"></i>
+              <h3>Selamat datang di Emergency Support</h3>
+              <p>Kami siap membantu Anda 24/7. Gunakan tombol darurat jika ada emergency.</p>
+            </div>
+          `;
+          return;
+        }
+
+        messages.forEach((msg) => {
+          const isUser = msg.sender_id === currentUser.id;
+          const timestamp = parseTimestamp(msg.timestamp || msg.createdAt);
+          
+          // Ambil hasil AI analysis dari backend
+          const isUrgent = msg.is_urgent && msg.urgency_analysis && msg.sender_role === 'user';
+          
+          addMessageElement(msg.message, isUser, timestamp, isUrgent, msg.urgency_analysis);
+        });
+
+        if (wasAtBottom) {
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 50);
+        }
+      }
+
+      function addMessageElement(text, isUser, timestamp, isUrgent = false, urgencyAnalysis = null) {
+        const container = document.getElementById("chatContainer");
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${isUser ? "sent" : "received"} ${isUrgent ? "urgent" : ""}`;
+
+        const time = timestamp.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        messageDiv.innerHTML = `
+          <div class="message-bubble">
+            ${text}
+            ${isUrgent ? '<span class="urgent-label">🚨 URGENT</span>' : ''}
+            ${isUrgent && urgencyAnalysis ? `<div class="ai-analysis-info"><small>🤖 ${urgencyAnalysis}</small></div>` : ''}
+            <div class="message-time">
+              ${time}
+              ${
+                isUser
+                  ? '<span class="read-status"><i class="fas fa-check-double"></i></span>'
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+
+        container.appendChild(messageDiv);
+      }
+
+      async function sendMessage(messageText = null) {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageText || messageInput.value.trim();
+
+        if (!message || !currentUser || !adminId) {
+          return;
+        }
+
+        if (!messageText) {
+          messageInput.value = "";
+          messageInput.style.height = "auto";
+        }
+
+        // Optimistically add message to UI (tanpa urgent detection di frontend)
+        addMessageElement(message, true, new Date(), false);
+
+        try {
+          const response = await fetch(`${apiUrl}/chat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+            body: JSON.stringify({
+              receiver_id: adminId,
+              message: message,
+            }),
+          });
+
+          if (response.ok) {
+            // Force immediate refresh untuk mendapatkan hasil AI analysis
+            setTimeout(() => {
+              loadChatHistory();
+            }, 500);
+
+            // Jika urgent mode aktif, beri notifikasi
+            if (urgentMode) {
+              showSuccess("🚨 Mode Darurat aktif - AI akan menganalisis tingkat urgensi pesan");
+            }
+          } else if (response.status === 401) {
+            showError("Sesi berakhir, silakan login ulang");
+            setTimeout(() => logout(), 2000);
+          } else {
+            showError("Gagal mengirim pesan");
+          }
+        } catch (error) {
+          console.error("Error sending message:", error);
+          showError("Error mengirim pesan");
+        }
+
+        // Reset urgent mode after sending
+        if (urgentMode) {
+          urgentMode = false;
+          updateUrgentButton();
+        }
+      }
+
+      function quickMessage(message) {
+        sendMessage(message);
+      }
+
+      function toggleUrgentMode() {
+        urgentMode = !urgentMode;
+        updateUrgentButton();
+        
+        if (urgentMode) {
+          showSuccess("🚨 Mode Darurat Aktif - Pesan selanjutnya akan ditandai urgent");
+        } else {
+          showSuccess("Mode darurat dinonaktifkan");
+        }
+      }
+
+      function updateUrgentButton() {
+        const btn = document.getElementById("urgentToggle");
+        if (urgentMode) {
+          btn.style.background = "#c53030";
+          btn.textContent = "🚨 Mode Darurat ON";
+          btn.style.animation = "pulse 1s infinite";
+        } else {
+          btn.style.background = "#e53e3e";
+          btn.textContent = "🚨 Mode Darurat";
+          btn.style.animation = "pulse 2s infinite";
+        }
+      }
+
+      function logout() {
+        currentUser = null;
+        adminId = null;
+        currentMessages = [];
+
+        localStorage.removeItem("user_chat_data");
+
+        document.getElementById("chatApp").classList.remove("active");
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+      }
+    </script>
+  </body>
+</html>
