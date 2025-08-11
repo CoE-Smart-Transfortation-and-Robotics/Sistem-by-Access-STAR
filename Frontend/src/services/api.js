@@ -329,7 +329,6 @@ class ApiService {
     return this.request(`/seats/carriage/${carriageId}`);
   }
 
-  // ✅ Fix: Tambah booking endpoints yang ada di backend
   async getAvailableSeats(params) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(`/bookings/available-seats?${queryString}`);
@@ -342,7 +341,6 @@ class ApiService {
     });
   }
 
-  // ✅ Tambah endpoints yang masih missing:
   async getMyBookings() {
     return this.request('/bookings/mine');
   }
@@ -384,7 +382,28 @@ class ApiService {
 
   async searchTrainSchedules(params) {
     const queryString = new URLSearchParams(params).toString();
+    console.log("Generated query:", queryString);
     return this.request(`/bookings/schedules?${queryString}`);
+  }
+
+  // ================= CHAT ENDPOINTS =================
+
+  // Kirim pesan chat
+  async sendChatMessage({ receiver_id, message }) {
+    return this.request('/chat', {
+      method: 'POST',
+      body: { receiver_id, message },
+    });
+  }
+
+  // Ambil chat dengan user tertentu
+  async getChatWithUser(with_user_id) {
+    return this.request(`/chat?with_user_id=${with_user_id}`);
+  }
+
+  // Ambil daftar chat mendesak (urgent)
+  async getUrgentChats() {
+    return this.request('/chat/urgent');
   }
 
   

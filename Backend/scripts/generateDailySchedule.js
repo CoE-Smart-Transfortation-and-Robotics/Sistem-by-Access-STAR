@@ -1,3 +1,4 @@
+
 "use strict";
 const { Train, TrainSchedule, ScheduleRoute, sequelize } = require('../models');
 const { Op } = require('sequelize');
@@ -102,3 +103,4 @@ async function generateScheduleForTomorrow() {
 }
 
 generateScheduleForTomorrow();
+
