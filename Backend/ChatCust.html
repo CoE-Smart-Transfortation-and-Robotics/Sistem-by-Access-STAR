@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin CS Chat - Urgent Messages</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #0c1317;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .login-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .login-card {
+        background: #202c33;
+        border-radius: 15px;
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .login-header i {
+        font-size: 64px;
+        color: #e53e3e;
+        margin-bottom: 15px;
+      }
+
+      .login-header h1 {
+        color: #e9edef;
+        font-size: 24px;
+        font-weight: 400;
+        margin-bottom: 5px;
+      }
+
+      .login-header p {
+        color: #8696a0;
+        font-size: 14px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        color: #8696a0;
+        font-size: 14px;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 15px;
+        background: #2a3942;
+        border: 1px solid #313d45;
+        border-radius: 8px;
+        color: #e9edef;
+        font-size: 16px;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #e53e3e;
+      }
+
+      .login-btn {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        width: 100%;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .login-btn:hover {
+        background: #c53030;
+      }
+
+      .login-btn:disabled {
+        background: #3c4043;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ffffff30;
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .chat-app {
+        display: none;
+        height: 100vh;
+        flex-direction: row;
+      }
+
+      .chat-app.active {
+        display: flex;
+      }
+
+      /* Sidebar Chat List */
+      .chat-sidebar {
+        width: 350px;
+        background: #202c33;
+        border-right: 1px solid #313d45;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-header {
+        background: #202c33;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #313d45;
+      }
+
+      .sidebar-header h1 {
+        color: #e9edef;
+        font-size: 20px;
+        font-weight: 400;
+      }
+
+      .urgent-badge {
+        background: #e53e3e;
+        color: white;
+        border-radius: 50%;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 10px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+        }
+      }
+
+      .sidebar-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .sidebar-btn {
+        background: none;
+        border: none;
+        color: #8696a0;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background 0.2s;
+      }
+
+      .sidebar-btn:hover {
+        background: rgba(134, 150, 160, 0.1);
+      }
+
+      .search-container {
+        padding: 10px 20px;
+        background: #202c33;
+        border-bottom: 1px solid #313d45;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 10px 15px;
+        background: #2a3942;
+        border: 1px solid #313d45;
+        border-radius: 20px;
+        color: #e9edef;
+        font-size: 14px;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #e53e3e;
+      }
+
+      .chat-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .chat-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #313d45;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .chat-item:hover {
+        background: #2a3942;
+      }
+
+      .chat-item.active {
+        background: #2a3942;
+      }
+
+      .chat-item.urgent {
+        background: rgba(229, 62, 62, 0.1);
+        border-left: 4px solid #e53e3e;
+      }
+
+      .chat-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e53e3e, #c53030);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      .chat-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .chat-name {
+        color: #e9edef;
+        font-size: 16px;
+        font-weight: 400;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chat-name .urgent-indicator {
+        color: #e53e3e;
+        font-size: 14px;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+
+      .chat-last-message {
+        color: #8696a0;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .chat-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .chat-time {
+        color: #8696a0;
+        font-size: 12px;
+      }
+
+      .urgent-count {
+        background: #e53e3e;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        min-width: 20px;
+        text-align: center;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+      }
+
+      /* Main Chat Area */
+      .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        background: #202c33;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid #313d45;
+      }
+
+      .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e53e3e, #c53030);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .chat-header-info h2 {
+        color: #e9edef;
+        font-size: 16px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chat-header-info .status {
+        color: #8696a0;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+
+      .chat-header-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+      }
+
+      .header-btn {
+        background: none;
+        border: none;
+        color: #8696a0;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 50%;
+        transition: background 0.2s;
+      }
+
+      .header-btn:hover {
+        background: rgba(134, 150, 160, 0.1);
+      }
+
+      .chat-container {
+        flex: 1;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="chat-bg" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="%230c1317"/><rect width="100" height="100" fill="url(%23chat-bg)"/></svg>');
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message {
+        max-width: 70%;
+        word-wrap: break-word;
+        margin-bottom: 4px;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.sent {
+        align-self: flex-end;
+      }
+
+      .message.received {
+        align-self: flex-start;
+      }
+
+      .message.urgent {
+        animation: urgentGlow 2s infinite;
+      }
+
+      @keyframes urgentGlow {
+        0%, 100% {
+          box-shadow: 0 0 5px rgba(229, 62, 62, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(229, 62, 62, 0.6);
+        }
+      }
+
+      .message-bubble {
+        padding: 8px 12px;
+        border-radius: 7px;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .message.sent .message-bubble {
+        background: #005c4b;
+        color: #e9edef;
+      }
+
+      .message.received .message-bubble {
+        background: #202c33;
+        color: #e9edef;
+      }
+
+      .message.urgent .message-bubble {
+        background: rgba(229, 62, 62, 0.2);
+        border-left: 4px solid #e53e3e;
+      }
+
+      .message-time {
+        font-size: 11px;
+        color: rgba(233, 237, 239, 0.6);
+        margin-top: 4px;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .message.received .message-time {
+        justify-content: flex-start;
+      }
+
+      .urgent-label {
+        background: #e53e3e;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: bold;
+        margin-left: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      .read-status {
+        font-size: 12px;
+        color: #53bdeb;
+      }
+
+      .input-container {
+        background: #202c33;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-top: 1px solid #313d45;
+      }
+
+      .message-input {
+        flex: 1;
+        background: #2a3942;
+        border: none;
+        border-radius: 20px;
+        padding: 12px 16px;
+        color: #e9edef;
+        font-size: 15px;
+        resize: none;
+        max-height: 100px;
+        min-height: 44px;
+      }
+
+      .message-input:focus {
+        outline: none;
+        background: #2a3942;
+      }
+
+      .message-input::placeholder {
+        color: #8696a0;
+      }
+
+      .send-btn {
+        background: #e53e3e;
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .send-btn:hover {
+        background: #c53030;
+      }
+
+      .send-btn i {
+        color: white;
+        font-size: 16px;
+      }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #8696a0;
+        text-align: center;
+        gap: 20px;
+      }
+
+      .empty-state i {
+        font-size: 64px;
+        opacity: 0.3;
+      }
+
+      .empty-state h3 {
+        font-size: 18px;
+        font-weight: 400;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+        max-width: 300px;
+        line-height: 1.4;
+      }
+
+      .error-message {
+        background: #f44336;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin: 10px 20px;
+        font-size: 14px;
+        animation: slideDown 0.3s ease;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .success-message {
+        background: #e53e3e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin: 10px 20px;
+        font-size: 14px;
+        animation: slideDown 0.3s ease;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      .urgent-alert {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #e53e3e;
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(229, 62, 62, 0.3);
+        z-index: 10000;
+        text-align: center;
+        animation: urgentPulse 1s infinite;
+      }
+
+      @keyframes urgentPulse {
+        0%, 100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .chat-app {
+          flex-direction: column;
+        }
+
+        .chat-sidebar {
+          width: 100%;
+          height: 60%;
+        }
+
+        .chat-main {
+          height: 40%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+      <div class="login-card">
+        <div class="login-header">
+          <i class="fas fa-shield-alt"></i>
+          <h1>Admin CS Dashboard</h1>
+          <p>Login sebagai admin untuk mengelola chat urgent</p>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email Admin:</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="admin@transport.com"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Masukkan password admin"
+              required
+            />
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <i class="fas fa-sign-in-alt"></i>
+            Login Admin CS
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #313d45;">
+          <small style="color: #8696a0;">
+            User biasa? <a href="ChatUser.html" style="color: #e53e3e;">Login di sini</a>
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat App -->
+    <div class="chat-app" id="chatApp">
+      <!-- Sidebar -->
+      <div class="chat-sidebar">
+        <div class="sidebar-header">
+          <h1>
+            🚨 Urgent Chats
+            <span class="urgent-badge" id="urgentBadge" style="display: none;">0</span>
+          </h1>
+          <div class="sidebar-actions">
+            <button
+              class="sidebar-btn"
+              onclick="refreshUrgentChats()"
+              title="Refresh"
+            >
+              <i class="fas fa-sync"></i>
+            </button>
+            <button class="sidebar-btn" onclick="logout()" title="Logout">
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Cari chat urgent..."
+            oninput="filterChats()"
+          />
+        </div>
+
+        <div class="chat-list" id="chatList">
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Belum ada chat urgent</h3>
+            <p>Chat urgent dari user akan muncul di sini</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="chat-main">
+        <div class="chat-header" id="chatHeader" style="display: none">
+          <div class="chat-header-avatar" id="chatHeaderAvatar">U</div>
+          <div class="chat-header-info">
+            <h2 id="chatHeaderName">
+              Select Urgent Chat
+              <i class="fas fa-exclamation-triangle urgent-indicator" style="display: none;"></i>
+            </h2>
+            <div class="status" id="chatHeaderStatus">Priority: High</div>
+          </div>
+          <div class="chat-header-actions">
+            <button
+              class="header-btn"
+              title="Mark as Resolved"
+              onclick="markAsResolved()"
+            >
+              <i class="fas fa-check"></i>
+            </button>
+            <button
+              class="header-btn"
+              title="Escalate"
+              onclick="escalateChat()"
+            >
+              <i class="fas fa-arrow-up"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+          <div class="empty-state">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Admin CS Dashboard</h3>
+            <p>Pilih chat urgent untuk mulai merespons</p>
+          </div>
+        </div>
+
+        <div class="input-container" id="inputContainer" style="display: none">
+          <textarea
+            class="message-input"
+            id="messageInput"
+            placeholder="Respon sebagai Admin CS..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const apiUrl = "http://localhost:9000/api";
+      let currentUser = null;
+      let currentChatUser = null;
+      let urgentChats = [];
+      let currentMessages = [];
+      let refreshInterval;
+      let chatRefreshIntervals = {};
+
+      // Helper function untuk parse timestamp
+      function parseTimestamp(timestamp) {
+        if (!timestamp) return new Date();
+        if (timestamp instanceof Date) return timestamp;
+        if (typeof timestamp === "string") {
+          const date = new Date(timestamp);
+          return isNaN(date.getTime()) ? new Date() : date;
+        }
+        return new Date();
+      }
+
+      // Helper function untuk create message hash
+      function createMessageHash(messages) {
+        return messages.map(msg => `${msg.sender_id}-${msg.message}-${msg.timestamp}`).join('|');
+      }
+
+      // Load saved admin data
+      window.addEventListener("DOMContentLoaded", function () {
+        const savedUser = localStorage.getItem("admin_cs_user");
+        if (savedUser) {
+          try {
+            currentUser = JSON.parse(savedUser);
+            if (currentUser.role === 'admin') {
+              document.getElementById("loginScreen").style.display = "none";
+              document.getElementById("chatApp").classList.add("active");
+              loadUrgentChats();
+              setupUrgentChatRefresh();
+            } else {
+              localStorage.removeItem("admin_cs_user");
+            }
+          } catch (error) {
+            console.error("Error loading saved admin:", error);
+            localStorage.removeItem("admin_cs_user");
+          }
+        }
+      });
+
+      // Login form handler - hanya admin yang bisa login
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("loginEmail").value.trim();
+          const password = document
+            .getElementById("loginPassword")
+            .value.trim();
+          const loginBtn = document.getElementById("loginBtn");
+
+          if (!email || !password) {
+            showError("Email dan password harus diisi!");
+            return;
+          }
+
+          loginBtn.disabled = true;
+          loginBtn.innerHTML = '<div class="spinner"></div> Login...';
+
+          try {
+            const response = await fetch(`${apiUrl}/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success && data.token) {
+              // Cek apakah user adalah admin
+              if (data.user.role !== 'admin') {
+                showError("Akses ditolak! Hanya admin yang dapat login ke dashboard ini.");
+                return;
+              }
+
+              currentUser = {
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email,
+                role: data.user.role,
+                token: data.token,
+              };
+
+              localStorage.setItem(
+                "admin_cs_user",
+                JSON.stringify(currentUser)
+              );
+
+              setTimeout(() => {
+                document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("chatApp").classList.add("active");
+                loadUrgentChats();
+                setupUrgentChatRefresh();
+              }, 500);
+            } else {
+              showError(data.message || "Login gagal!");
+            }
+          } catch (error) {
+            showError("Error: " + error.message);
+          } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login Admin CS';
+          }
+        });
+
+      // Auto-resize textarea
+      document
+        .getElementById("messageInput")
+        .addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = Math.min(this.scrollHeight, 100) + "px";
+        });
+
+      // Send message on Enter
+      document
+        .getElementById("messageInput")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+      function showError(message) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error-message";
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 3000);
+      }
+
+      function showSuccess(message) {
+        const successDiv = document.createElement("div");
+        successDiv.className = "success-message";
+        successDiv.textContent = message;
+        document.body.appendChild(successDiv);
+
+        setTimeout(() => {
+          successDiv.remove();
+        }, 3000);
+      }
+
+      function showUrgentAlert(message) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = "urgent-alert";
+        alertDiv.innerHTML = `
+          <h3><i class="fas fa-exclamation-triangle"></i> PESAN URGENT!</h3>
+          <p>${message}</p>
+          <button onclick="this.parentElement.remove()" style="background: white; color: #e53e3e; border: none; padding: 5px 10px; border-radius: 5px; margin-top: 10px; cursor: pointer;">OK</button>
+        `;
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+          alertDiv.remove();
+        }, 10000);
+      }
+
+      // Load urgent chats - hanya untuk admin
+      async function loadUrgentChats() {
+        if (!currentUser || currentUser.role !== 'admin') return;
+
+        try {
+          // Fetch urgent chats from API
+          const response = await fetch(`${apiUrl}/chat/urgent`, {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+          });
+
+          let urgentMessages = [];
+          if (response.ok) {
+            const data = await response.json();
+            urgentMessages = Array.isArray(data) ? data : data.data || [];
+          }
+
+          console.log('Urgent messages:', urgentMessages);
+
+          // Group messages by user ID
+          const chatsByUser = {};
+          urgentMessages.forEach(msg => {
+            const userId = msg.sender_role === 'user' ? msg.sender_id : msg.receiver_id;
+            if (!chatsByUser[userId]) {
+              chatsByUser[userId] = {
+                userId: userId,
+                messages: [],
+                lastMessage: null,
+                urgentCount: 0
+              };
+            }
+            chatsByUser[userId].messages.push(msg);
+            if (msg.is_urgent && msg.sender_role === 'user') {
+              chatsByUser[userId].urgentCount++;
+            }
+            if (!chatsByUser[userId].lastMessage || 
+                parseTimestamp(msg.timestamp) > parseTimestamp(chatsByUser[userId].lastMessage.timestamp)) {
+              chatsByUser[userId].lastMessage = msg;
+            }
+          });
+
+          // Convert to array and get user details
+          const urgentChatList = [];
+          for (const userId in chatsByUser) {
+            const chat = chatsByUser[userId];
+            try {
+              const userResponse = await fetch(`${apiUrl}/users/${userId}`, {
+                headers: {
+                  Authorization: `Bearer ${currentUser.token}`,
+                },
+              });
+              
+              let userName = `User ${userId}`;
+              if (userResponse.ok) {
+                const userData = await userResponse.json();
+                userName = userData.name || userData.email || `User ${userId}`;
+              }
+
+              urgentChatList.push({
+                userId: parseInt(userId),
+                userName: userName,
+                lastMessage: chat.lastMessage,
+                urgentCount: chat.urgentCount,
+                timestamp: parseTimestamp(chat.lastMessage.timestamp)
+              });
+            } catch (error) {
+              console.error(`Error fetching user ${userId}:`, error);
+              urgentChatList.push({
+                userId: parseInt(userId),
+                userName: `User ${userId}`,
+                lastMessage: chat.lastMessage,
+                urgentCount: chat.urgentCount,
+                timestamp: parseTimestamp(chat.lastMessage.timestamp)
+              });
+            }
+          }
+
+          // Sort by timestamp
+          urgentChatList.sort((a, b) => b.timestamp - a.timestamp);
+
+          // Check for new urgent messages
+          const totalUrgent = urgentChatList.reduce((total, chat) => total + chat.urgentCount, 0);
+          const previousTotal = urgentChats.reduce((total, chat) => total + chat.urgentCount, 0);
+
+          if (totalUrgent > previousTotal) {
+            const newUrgentCount = totalUrgent - previousTotal;
+            showUrgentAlert(`${newUrgentCount} pesan urgent baru dari pengguna!`);
+          }
+
+          urgentChats = urgentChatList;
+          renderUrgentChats();
+          updateUrgentBadge();
+
+        } catch (error) {
+          console.error("Error loading urgent chats:", error);
+        }
+      }
+
+      function renderUrgentChats() {
+        const chatListContainer = document.getElementById("chatList");
+        const currentlyActiveId = currentChatUser ? currentChatUser.id : null;
+
+        if (urgentChats.length === 0) {
+          chatListContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h3>Belum ada chat urgent</h3>
+              <p>Chat urgent dari user akan muncul di sini</p>
+            </div>
+          `;
+          return;
+        }
+
+        chatListContainer.innerHTML = urgentChats
+          .map((chat) => {
+            const messagePreview =
+              chat.lastMessage.message.length > 30
+                ? chat.lastMessage.message.substring(0, 30) + "..."
+                : chat.lastMessage.message;
+
+            const time = chat.timestamp.toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return `
+              <div class="chat-item ${currentlyActiveId === chat.userId ? "active" : ""} ${chat.urgentCount > 0 ? "urgent" : ""}" 
+                   onclick="selectChat(${chat.userId}, '${chat.userName}')">
+                <div class="chat-avatar">
+                  ${chat.userName.charAt(0).toUpperCase()}
+                </div>
+                <div class="chat-info">
+                  <div class="chat-name">
+                    ${chat.userName}
+                    ${chat.urgentCount > 0 ? '<i class="fas fa-exclamation-triangle urgent-indicator"></i>' : ''}
+                  </div>
+                  <div class="chat-last-message">
+                    ${messagePreview}
+                  </div>
+                </div>
+                <div class="chat-meta">
+                  <div class="chat-time">${time}</div>
+                  ${
+                    chat.urgentCount > 0
+                      ? `<div class="urgent-count">${chat.urgentCount}</div>`
+                      : ""
+                  }
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function updateUrgentBadge() {
+        const totalUrgent = urgentChats.reduce((total, chat) => total + chat.urgentCount, 0);
+        const badge = document.getElementById("urgentBadge");
+        
+        if (totalUrgent > 0) {
+          badge.textContent = totalUrgent;
+          badge.style.display = "inline";
+        } else {
+          badge.style.display = "none";
+        }
+      }
+
+      function selectChat(userId, userName) {
+        currentChatUser = {
+          id: userId,
+          name: userName,
+        };
+
+        // Update active chat item
+        document.querySelectorAll(".chat-item").forEach((item) => {
+          item.classList.remove("active");
+        });
+        event.currentTarget.classList.add("active");
+
+        // Show chat header and input
+        document.getElementById("chatHeader").style.display = "flex";
+        document.getElementById("inputContainer").style.display = "flex";
+
+        // Update header info
+        document.getElementById("chatHeaderName").innerHTML = `
+          ${userName}
+          <i class="fas fa-exclamation-triangle urgent-indicator"></i>
+        `;
+        document.getElementById("chatHeaderAvatar").textContent = userName
+          .charAt(0)
+          .toUpperCase();
+
+        // Reset current messages array
+        currentMessages = [];
+        
+        // Load chat history
+        loadChatHistory();
+        setupChatRefresh(userId);
+      }
+
+      function setupChatRefresh(userId) {
+        // Clear existing interval for this chat
+        if (chatRefreshIntervals[userId]) {
+          clearInterval(chatRefreshIntervals[userId]);
+        }
+
+        // Set new interval
+        chatRefreshIntervals[userId] = setInterval(() => {
+          if (currentChatUser && currentChatUser.id === userId) {
+            loadChatHistory();
+          }
+        }, 1000);
+      }
+
+      function setupUrgentChatRefresh() {
+        setInterval(() => {
+          loadUrgentChats();
+        }, 3000);
+      }
+
+      async function loadChatHistory() {
+        if (!currentUser || !currentChatUser) return;
+
+        try {
+          const response = await fetch(
+            `${apiUrl}/chat?with_user_id=${currentChatUser.id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${currentUser.token}`,
+              },
+            }
+          );
+
+          const data = await response.json();
+          let messages = [];
+
+          if (response.ok) {
+            messages = Array.isArray(data) ? data : data.data || [];
+          } else if (response.status === 401) {
+            showError("Sesi berakhir, silakan login ulang");
+            setTimeout(() => logout(), 2000);
+            return;
+          }
+
+          // Check if messages have changed
+          const newHash = createMessageHash(messages);
+          const oldHash = createMessageHash(currentMessages);
+
+          if (newHash !== oldHash) {
+            currentMessages = messages;
+            displayMessages(messages);
+          }
+        } catch (error) {
+          console.error("Error loading chat:", error);
+        }
+      }
+
+      function displayMessages(messages) {
+        const container = document.getElementById("chatContainer");
+        
+        const wasAtBottom =
+          container.scrollTop >=
+          container.scrollHeight - container.clientHeight - 50;
+
+        container.innerHTML = "";
+
+        if (messages.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-comments"></i>
+              <h3>Belum ada pesan</h3>
+              <p>Mulai percakapan dengan mengirim respon</p>
+            </div>
+          `;
+          return;
+        }
+
+        messages.forEach((msg) => {
+          const isAdmin = msg.sender_id === currentUser.id;
+          const timestamp = parseTimestamp(msg.timestamp || msg.createdAt);
+          const isUrgent = msg.is_urgent && msg.sender_role === 'user';
+          addMessageElement(msg.message, isAdmin, timestamp, isUrgent);
+        });
+
+        if (wasAtBottom) {
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 50);
+        }
+      }
+
+      function addMessageElement(text, isAdmin, timestamp, isUrgent = false) {
+        const container = document.getElementById("chatContainer");
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${isAdmin ? "sent" : "received"} ${isUrgent ? "urgent" : ""}`;
+
+        const time = timestamp.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        messageDiv.innerHTML = `
+          <div class="message-bubble">
+            ${text}
+            ${isUrgent ? '<span class="urgent-label">🚨 URGENT</span>' : ''}
+            <div class="message-time">
+              ${time}
+              ${
+                isAdmin
+                  ? '<span class="read-status"><i class="fas fa-check-double"></i></span>'
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+
+        container.appendChild(messageDiv);
+      }
+
+      async function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+
+        if (!message || !currentUser || !currentChatUser) {
+          return;
+        }
+
+        messageInput.value = "";
+        messageInput.style.height = "auto";
+
+        // Optimistically add message to UI
+        addMessageElement(message, true, new Date());
+
+        try {
+          const response = await fetch(`${apiUrl}/chat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+            body: JSON.stringify({
+              receiver_id: currentChatUser.id,
+              message: message,
+            }),
+          });
+
+          if (response.ok) {
+            // Force immediate refresh
+            setTimeout(() => {
+              loadChatHistory();
+              loadUrgentChats();
+            }, 500);
+          } else if (response.status === 401) {
+            showError("Sesi berakhir, silakan login ulang");
+            setTimeout(() => logout(), 2000);
+          } else {
+            showError("Gagal mengirim pesan");
+          }
+        } catch (error) {
+          console.error("Error sending message:", error);
+          showError("Error mengirim pesan");
+        }
+      }
+
+      function refreshUrgentChats() {
+        loadUrgentChats();
+        showSuccess("Chat urgent telah diperbarui");
+      }
+
+      function markAsResolved() {
+        if (!currentChatUser) return;
+        
+        // Implementation untuk mark as resolved
+        showSuccess(`Chat dengan ${currentChatUser.name} ditandai sebagai selesai`);
+        
+        // Remove from urgent list
+        urgentChats = urgentChats.filter(chat => chat.userId !== currentChatUser.id);
+        renderUrgentChats();
+        updateUrgentBadge();
+        
+        // Clear current chat
+        currentChatUser = null;
+        document.getElementById("chatHeader").style.display = "none";
+        document.getElementById("inputContainer").style.display = "none";
+        document.getElementById("chatContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Admin CS Dashboard</h3>
+            <p>Pilih chat urgent untuk mulai merespons</p>
+          </div>
+        `;
+      }
+
+      function escalateChat() {
+        if (!currentChatUser) return;
+        
+        showSuccess(`Chat dengan ${currentChatUser.name} telah dieskalasi ke supervisor`);
+      }
+
+      function filterChats() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const chatItems = document.querySelectorAll(".chat-item");
+
+        chatItems.forEach((item) => {
+          const chatName = item
+            .querySelector(".chat-name")
+            .textContent.toLowerCase();
+          const lastMessage = item
+            .querySelector(".chat-last-message")
+            .textContent.toLowerCase();
+
+          if (
+            chatName.includes(searchTerm) ||
+            lastMessage.includes(searchTerm)
+          ) {
+            item.style.display = "flex";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+
+      function logout() {
+        currentUser = null;
+        currentChatUser = null;
+        urgentChats = [];
+        currentMessages = [];
+
+        // Clear all intervals
+        Object.values(chatRefreshIntervals).forEach((interval) => {
+          clearInterval(interval);
+        });
+        chatRefreshIntervals = {};
+
+        localStorage.removeItem("admin_cs_user");
+
+        document.getElementById("chatApp").classList.remove("active");
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+      }
+
+      // Cleanup intervals when page unloads
+      window.addEventListener('beforeunload', function() {
+        Object.values(chatRefreshIntervals).forEach((interval) => {
+          clearInterval(interval);
+        });
+      });
+    </script>
+  </body>
